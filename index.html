@@ -47,8 +47,6 @@
     input:checked + .slider { background-color: var(--success); }
     input:checked + .slider:before { transform: translateX(22px); }
 
-    .drive-link { display: inline-block; background: #e2e8f0; color: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; margin: 2px;}
-    .drive-link:hover { background: var(--primary); color: white;}
     .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
     .dash-card { padding: 20px; border-radius: 12px; text-align: center; border: 1px solid var(--border); background: white;}
     .dash-card h3 { margin: 0; font-size: 1.8rem; }
@@ -91,7 +89,7 @@
           </div>
 
           <div id="vDriveArea" style="display:none; text-align: center;">
-             <strong style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:5px;">หลักฐาน (Google Drive)</strong>
+             <strong style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:5px;">ภาพหลักฐาน</strong>
              <div id="vDriveLinks"></div>
           </div>
         </div>
@@ -142,7 +140,7 @@
   
   <script>
     // =================================================================
-    // ⚠️ ให้นำลิงก์ Web App (ที่ลงท้ายด้วย /exec) มาใส่ในบรรทัดด้านล่างนี้
+    // ลิงก์ Web App API
     // =================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbzYR-nd2RmHna2MOjEv6YnWHgx24lGr5P8YO0NCCGIdmgT5ck9FlFzLalE0AEhvwbz6/exec";
     
@@ -207,11 +205,29 @@
             document.getElementById('vChecklistList').innerHTML = chkHtml;
             document.getElementById('vChecklistArea').style.display = "block";
             
-            let driveHtml = "";
+            // 🖼️ ระบบแปลงลิงก์โชว์ภาพจาก Drive อัตโนมัติ
+            let driveHtml = "<div style='display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;'>";
+            let hasPhotos = false;
+            
             for(let i=0; i<4; i++) {
-              if(data.photos[i]) driveHtml += `<a href="${data.photos[i]}" target="_blank" class="drive-link"><i class="fa-brands fa-google-drive"></i> รูปที่ ${i+1}</a>`;
+              if(data.photos[i] && data.photos[i] !== "") {
+                hasPhotos = true;
+                let directUrl = data.photos[i];
+                let match = directUrl.match(/\/d\/(.+?)\//);
+                if(match && match[1]) {
+                  directUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+                }
+                driveHtml += `
+                  <div style="border-radius:8px; overflow:hidden; border:1px solid #e2e8f0; aspect-ratio: 1/1; position:relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <a href="${data.photos[i]}" target="_blank">
+                      <img src="${directUrl}" style="width:100%; height:100%; object-fit:cover;" alt="หลักฐานที่ ${i+1}">
+                    </a>
+                  </div>`;
+              }
             }
-            if(driveHtml) {
+            driveHtml += "</div>";
+
+            if(hasPhotos) {
               document.getElementById('vDriveLinks').innerHTML = driveHtml;
               document.getElementById('vDriveArea').style.display = "block";
             }
