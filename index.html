@@ -9,35 +9,57 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    :root { --primary: #0033a0; --bg: #f8fafc; --surface: #ffffff; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Prompt', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; justify-content: center; }
-    .container { background: var(--surface); width: 100%; max-width: 650px; display: flex; flex-direction: column; position: relative; }
-    @media (min-width: 768px) { .container { margin: 40px; border-radius: 24px; min-height: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow: hidden; } }
+    /* CSS Variables ควบคุม Theme */
+    :root { 
+      --primary: #0033a0; --bg: #f1f5f9; --surface: #ffffff; 
+      --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; 
+      --success: #10b981; --danger: #ef4444; --glow-1: #0033a0; --glow-2: #38bdf8;
+    }
     
-    .header { background: var(--primary); color: white; padding: 25px 20px; text-align: center; position: relative;}
-    .connection-status { display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; background: rgba(255,255,255,0.2); color: white; transition: 0.3s;}
+    body.dark-mode {
+      --primary: #38bdf8; --bg: #0f172a; --surface: #1e293b; 
+      --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; 
+      --glow-1: #38bdf8; --glow-2: #818cf8;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
+    body { font-family: 'Prompt', sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;}
     
+    /* Responsive Container + Glowing Effect */
+    .glow-wrapper { position: relative; width: 100%; max-width: 600px; }
+    .glow-wrapper::before {
+      content: ""; position: absolute; inset: -4px; border-radius: 28px;
+      background: linear-gradient(45deg, var(--glow-1), var(--glow-2), var(--success), var(--glow-1));
+      background-size: 400%; z-index: -1; animation: glowing 10s linear infinite;
+    }
+    @keyframes glowing { 0% { background-position: 0 0; } 50% { background-position: 400% 0; } 100% { background-position: 0 0; } }
+    
+    .container { background: var(--surface); width: 100%; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; position: relative;}
+    
+    .header { background: var(--primary); color: #fff; padding: 25px 20px; text-align: center; position: relative; }
+    .theme-toggle { position: absolute; top: 15px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
+    
+    .connection-status { display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; background: rgba(255,255,255,0.2); color: #fff; }
     .content { padding: 30px 25px; }
-    .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-family: 'Prompt'; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; display:flex; justify-content:center; align-items:center; gap:10px;}
+    
+    .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-family: inherit; font-weight: 600; font-size: 1rem; cursor: pointer; display:flex; justify-content:center; align-items:center; gap:10px; margin-top:10px;}
     .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-danger { background: var(--danger); color: white; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     
-    input[type="text"], input[type="password"] { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 10px; font-family: 'Prompt'; font-size: 1rem; margin-bottom: 20px; outline: none; transition: 0.3s; background: var(--bg);}
-    input:focus { border-color: var(--primary); background: white;}
+    input[type="text"], input[type="password"] { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 1rem; margin-bottom: 20px; outline: none; background: var(--bg); color: var(--text);}
+    input:focus { border-color: var(--primary); }
     
-    .info-card { background: var(--bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
-    .status-badge { display: inline-block; padding: 10px 25px; border-radius: 30px; font-size: 1.1rem; background: white; border: 1px solid var(--border); margin-bottom: 15px; font-weight:bold;}
+    .info-card { background: var(--bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom:20px; }
+    .status-badge { display: inline-block; padding: 10px 25px; border-radius: 30px; font-size: 1.1rem; border: 1px solid var(--border); margin-bottom: 15px; font-weight:bold;}
     
     .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .photo-box { background: var(--bg); border: 2px dashed var(--border); border-radius: 12px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
     .photo-box img { position: absolute; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1;}
     .photo-del { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.9); color: var(--danger); border-radius: 50%; width: 28px; height: 28px; display: none; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     
-    .checklist-container { border: 1px solid var(--border); border-radius: 12px; padding: 5px 20px; margin-top: 10px; background: white;}
+    .checklist-container { border: 1px solid var(--border); border-radius: 12px; padding: 5px 20px; margin-top: 10px; background: var(--bg);}
     .checklist-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); font-size:0.9rem;}
     .checklist-item:last-child { border-bottom: none; }
     .switch { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
@@ -48,28 +70,33 @@
     input:checked + .slider:before { transform: translateX(22px); }
 
     .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-    .dash-card { padding: 20px; border-radius: 12px; text-align: center; border: 1px solid var(--border); background: white;}
-    .dash-card h3 { margin: 0; font-size: 1.8rem; }
+    .dash-card { padding: 20px; border-radius: 12px; text-align: center; border: 1px solid var(--border); background: var(--bg);}
   </style>
 </head>
 <body>
 
+<div class="glow-wrapper">
   <div class="container">
     <div class="header">
+      <button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button>
       <h1 style="margin:0; font-size:1.8rem; font-weight:700;"><i class="fa-solid fa-shield-halved"></i> NTL SAFETY</h1>
       <div id="connBadge" class="connection-status">
-        <i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลดข้อมูล...
+        <i class="fa-solid fa-circle-notch fa-spin"></i> กำลังซิงค์ข้อมูล...
       </div>
     </div>
     
     <div class="content">
-      
       <div id="viewMode" style="text-align: center;">
         <p style="color:var(--primary); font-weight:600; margin:0 0 5px; text-transform:uppercase;" id="vType">กำลังโหลด...</p>
-        <h2 style="margin: 0 0 20px; font-size:2rem;" id="vAssetId">-</h2>
+        <h2 style="margin: 0 0 10px; font-size:2rem;" id="vAssetId">-</h2>
         
-        <div class="info-card" style="margin-bottom: 25px; text-align: left;">
-          <h4 style="margin:0 0 15px; color:var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 10px; text-align:center;">
+        <p style="color:var(--text-muted); font-size:0.9rem; margin: 0 0 20px;">
+          <i class="fa-solid fa-building"></i> <span id="vBuilding">-</span> | 
+          <i class="fa-solid fa-stairs"></i> ชั้น: <span id="vFloor">-</span>
+        </p>
+        
+        <div class="info-card" style="text-align: left;">
+          <h4 style="margin:0 0 15px; color:var(--text); border-bottom: 1px solid var(--border); padding-bottom: 10px; text-align:center;">
             <i class="fa-solid fa-calendar-days"></i> สถานะเดือน: <span id="vMonth">-</span>
           </h4>
           <div style="text-align: center;" id="vStatus"></div>
@@ -83,14 +110,9 @@
             <strong style="color:var(--text);" id="vInspector">-</strong>
           </div>
 
-          <div id="vChecklistArea" style="display:none; background: white; padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom:15px;">
+          <div id="vChecklistArea" style="display:none; background: var(--surface); padding: 10px; border-radius: 10px; border: 1px solid var(--border);">
              <strong style="font-size:0.85rem; color:var(--text-muted);">ผลการตรวจ 5 ข้อสำคัญ:</strong>
              <ul style="margin:5px 0 0; padding-left: 20px; font-size:0.85rem;" id="vChecklistList"></ul>
-          </div>
-
-          <div id="vDriveArea" style="display:none; text-align: center;">
-             <strong style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:5px;">ภาพหลักฐาน</strong>
-             <div id="vDriveLinks"></div>
           </div>
         </div>
         
@@ -102,13 +124,13 @@
         <input type="text" id="usernameInput" placeholder="Username (ชื่อผู้ใช้งาน)">
         <input type="password" id="passwordInput" placeholder="Password (รหัสผ่าน)">
         <button class="btn btn-primary" onclick="handleLogin()"><i class="fa-solid fa-unlock-keyhole"></i> เข้าสู่ระบบ</button>
-        <button class="btn btn-outline" onclick="goBackToView()" style="margin-top:15px;">กลับหน้าแรก</button>
+        <button class="btn btn-outline" onclick="goBackToView()">ยกเลิก</button>
       </div>
 
       <div id="formSection" style="display: none;">
-        <div class="info-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding:15px;">
-          <div><i class="fa-solid fa-user-shield"></i> <span id="displayInspector"></span></div>
-          <button class="btn btn-danger" style="width:auto; padding:5px 15px; border-radius:8px; font-size:0.8rem;" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ</button>
+        <div class="info-card" style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
+          <div><i class="fa-solid fa-user-shield"></i> <strong id="displayInspector" style="color:var(--primary);"></strong></div>
+          <button class="btn btn-danger" style="width:auto; padding:8px 15px; margin:0;" onclick="logout()"><i class="fa-solid fa-power-off"></i></button>
         </div>
         
         <label style="font-weight:600; font-size:0.9rem;">ภาพถ่ายหลักฐาน (บังคับ 2 รูปขึ้นไป)</label>
@@ -118,38 +140,23 @@
         <div class="checklist-container" id="checklistArea"></div>
 
         <button class="btn btn-primary" id="submitBtn" onclick="submitInspection()" style="margin-top:20px;">
-          <i class="fa-solid fa-cloud-arrow-up"></i> บันทึกเข้าระบบส่วนกลาง
+          <i class="fa-solid fa-cloud-arrow-up"></i> ยืนยันบันทึกผล
         </button>
-      </div>
-
-      <div id="dashboardSection" style="display: none;">
-        <h3 style="color:var(--primary); margin-top:0;"><i class="fa-solid fa-chart-pie"></i> ภาพรวมเดือนนี้</h3>
-        <div class="info-card" style="text-align:center;">
-          <h1 id="dashTotal" style="font-size:3.5rem; margin:0; color:var(--primary);"><i class="fa-solid fa-spinner fa-spin"></i></h1>
-          <p style="margin:0; color:var(--text-muted);">ตรวจสอบแล้ว (รายการ)</p>
-        </div>
-        <div class="dash-grid">
-          <div class="dash-card"><h3 id="dashPass" style="color:var(--success);">-</h3><p style="margin:5px 0 0;">ปกติ (PASS)</p></div>
-          <div class="dash-card"><h3 id="dashFail" style="color:var(--danger);">-</h3><p style="margin:5px 0 0;">ชำรุด (FAIL)</p></div>
-        </div>
-        <button class="btn btn-outline" onclick="goBackToForm()" style="margin-top:20px;">กลับไปหน้าบันทึกผล</button>
       </div>
 
     </div>
   </div>
+</div>
   
   <script>
     // =================================================================
-    // ลิงก์ Web App API
+    // ⚠️ นำลิงก์ Web App URL (หลังบ้าน) มาใส่ที่นี่
     // =================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbzYR-nd2RmHna2MOjEv6YnWHgx24lGr5P8YO0NCCGIdmgT5ck9FlFzLalE0AEhvwbz6/exec";
     
-    // ดึงค่า ?id= ออกจาก URL ของ GitHub Pages
     const urlParams = new URLSearchParams(window.location.search);
     const SYSTEM_ASSET_ID = urlParams.get('id') || "NTL-FE-ARI-001"; 
-    
     const isEmergencyLight = SYSTEM_ASSET_ID.includes("EL-");
-    const building = SYSTEM_ASSET_ID.includes("-ARI-") ? "Ari Hills" : "KSL Tower";
     
     const checksList = isEmergencyLight
         ? ["ปลั๊กไฟแน่นหนา ไฟ AC ติดปกติ", "หลอดไฟส่องสว่างทำงาน", "ปุ่ม Test ระบบไฟทำงาน", "แบตเตอรี่ไม่บวม", "สภาพเครื่องสมบูรณ์"]
@@ -159,12 +166,26 @@
     let isSubmitting = false;
     let photos = [undefined, undefined, undefined, undefined];
     let gpsLocation = "0,0";
-    let sessionTimer;
 
     document.getElementById('vAssetId').innerText = SYSTEM_ASSET_ID;
     document.getElementById('vType').innerText = isEmergencyLight ? "Emergency Light" : "Fire Extinguisher";
 
-    // ฟังก์ชันยิง API กลาง (ทะลุ CORS)
+    // ระบบ Dark Mode
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+      body.classList.toggle('dark-mode');
+      if (body.classList.contains('dark-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'โหมดกลางคืน', showConfirmButton: false, timer: 1000 });
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'โหมดสว่าง', showConfirmButton: false, timer: 1000 });
+      }
+    }
+
     async function apiRequest(action, payload) {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -176,24 +197,33 @@
       return result.data;
     }
 
-    // โหลดข้อมูล View Mode อัตโนมัติเมื่อเปิดเพจ
+    // 1. โหลดข้อมูล View Mode
     document.addEventListener("DOMContentLoaded", () => {
       apiRequest('getAssetData', { assetId: SYSTEM_ASSET_ID })
         .then(data => {
-          document.getElementById('connBadge').innerHTML = '<i class="fa-solid fa-circle-check"></i> ข้อมูลล่าสุดจากระบบ';
-          document.getElementById('connBadge').style.background = '#d1fae5'; 
-          document.getElementById('connBadge').style.color = '#059669';
-
+          document.getElementById('connBadge').innerHTML = '<i class="fa-solid fa-wifi"></i> ออนไลน์';
+          document.getElementById('connBadge').style.background = 'rgba(16, 185, 129, 0.2)'; 
+          
           document.getElementById('vMonth').innerText = data.currentMonth;
           document.getElementById('vDate').innerText = data.lastDate;
           document.getElementById('vInspector').innerText = data.lastInspector;
+          document.getElementById('vBuilding').innerText = data.building;
+          document.getElementById('vFloor').innerText = data.floor;
 
           if (data.lastStatus === "FAIL") {
-            document.getElementById('vStatus').innerHTML = "<div class='status-badge' style='color:#ef4444; border-color:#ef4444;'><i class='fa-solid fa-triangle-exclamation'></i> อุปกรณ์ชำรุด (FAIL)</div>";
+            document.getElementById('vStatus').innerHTML = "<div class='status-badge' style='color:#ef4444; border-color:#ef4444; background:rgba(239, 68, 68, 0.1);'><i class='fa-solid fa-triangle-exclamation'></i> อุปกรณ์ชำรุด (FAIL)</div>";
           } else if (data.lastStatus === "PASS") {
-            document.getElementById('vStatus').innerHTML = "<div class='status-badge' style='color:#10b981; border-color:#10b981;'><i class='fa-solid fa-circle-check'></i> ปกติ (PASS)</div>";
+            document.getElementById('vStatus').innerHTML = "<div class='status-badge' style='color:#10b981; border-color:#10b981; background:rgba(16, 185, 129, 0.1);'><i class='fa-solid fa-circle-check'></i> ปกติ (PASS)</div>";
           } else {
-            document.getElementById('vStatus').innerHTML = "<div class='status-badge' style='color:#64748b;'><i class='fa-regular fa-clock'></i> รอดำเนินการเดือนนี้</div>";
+            document.getElementById('vStatus').innerHTML = "<div class='status-badge' style='color:var(--text-muted);'><i class='fa-regular fa-clock'></i> รอดำเนินการ</div>";
+            // 🚨 แจ้งเตือน Popup ทันทีที่ยังไม่ตรวจ
+            Swal.fire({
+              icon: 'warning',
+              title: 'ถึงรอบการตรวจสอบ',
+              text: 'อุปกรณ์นี้ยังไม่ได้ตรวจสอบในเดือนปัจจุบัน',
+              confirmButtonColor: '#0033a0',
+              confirmButtonText: 'รับทราบ'
+            });
           }
 
           if (data.lastStatus !== "PENDING") {
@@ -204,104 +234,64 @@
             }
             document.getElementById('vChecklistList').innerHTML = chkHtml;
             document.getElementById('vChecklistArea').style.display = "block";
-            
-            // 🖼️ ระบบแปลงลิงก์โชว์ภาพจาก Drive อัตโนมัติ
-            let driveHtml = "<div style='display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;'>";
-            let hasPhotos = false;
-            
-            for(let i=0; i<4; i++) {
-              if(data.photos[i] && data.photos[i] !== "") {
-                hasPhotos = true;
-                let directUrl = data.photos[i];
-                let match = directUrl.match(/\/d\/(.+?)\//);
-                if(match && match[1]) {
-                  directUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
-                }
-                driveHtml += `
-                  <div style="border-radius:8px; overflow:hidden; border:1px solid #e2e8f0; aspect-ratio: 1/1; position:relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <a href="${data.photos[i]}" target="_blank">
-                      <img src="${directUrl}" style="width:100%; height:100%; object-fit:cover;" alt="หลักฐานที่ ${i+1}">
-                    </a>
-                  </div>`;
-              }
-            }
-            driveHtml += "</div>";
-
-            if(hasPhotos) {
-              document.getElementById('vDriveLinks').innerHTML = driveHtml;
-              document.getElementById('vDriveArea').style.display = "block";
-            }
           }
         })
         .catch(() => {
-          document.getElementById('connBadge').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ขาดการเชื่อมต่อ';
-          document.getElementById('connBadge').style.background = '#fee2e2'; 
-          document.getElementById('connBadge').style.color = '#dc2626';
+          document.getElementById('connBadge').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ออฟไลน์';
+          document.getElementById('connBadge').style.background = 'rgba(239, 68, 68, 0.2)'; 
         });
     });
 
-    // Session Timeout
-    function resetSession() {
-      clearTimeout(sessionTimer);
-      if(currentUser) {
-        sessionTimer = setTimeout(() => {
-          Swal.fire({ icon: 'warning', title: 'หมดเวลา', text: 'กรุณาเข้าสู่ระบบใหม่', allowOutsideClick: false })
-          .then(() => location.reload());
-        }, 15 * 60 * 1000); 
-      }
-    }
-    ['click', 'touchstart', 'keypress'].forEach(e => document.addEventListener(e, resetSession));
-
-    // Router & Logout
+    // 2. Navigation Popups
     function showLogin() {
-      document.getElementById('viewMode').style.display = 'none';
-      document.getElementById('loginSection').style.display = 'block';
+      Swal.fire({ title: 'เข้าสู่ระบบเจ้าหน้าที่?', showCancelButton: true, confirmButtonText: 'ใช่, ไปหน้าล็อกอิน', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0033a0'})
+      .then((res) => {
+        if(res.isConfirmed) {
+          document.getElementById('viewMode').style.display = 'none';
+          document.getElementById('loginSection').style.display = 'block';
+        }
+      });
     }
     function goBackToView() {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('viewMode').style.display = 'block';
     }
-    function goBackToForm() {
-      document.getElementById('dashboardSection').style.display = 'none';
-      document.getElementById('formSection').style.display = 'block';
-    }
     function logout() {
-      currentUser = null;
-      document.getElementById('formSection').style.display = 'none';
-      document.getElementById('viewMode').style.display = 'block';
-      document.getElementById('usernameInput').value = '';
-      document.getElementById('passwordInput').value = '';
-      Swal.fire({ icon: 'success', title: 'ออกจากระบบแล้ว', showConfirmButton: false, timer: 1500 });
+      Swal.fire({ title: 'ต้องการออกจากระบบ?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          currentUser = null;
+          document.getElementById('formSection').style.display = 'none';
+          document.getElementById('viewMode').style.display = 'block';
+          document.getElementById('usernameInput').value = '';
+          document.getElementById('passwordInput').value = '';
+          Swal.fire({ toast:true, position: 'top-end', icon: 'success', title: 'ออกจากระบบสำเร็จ', showConfirmButton: false, timer: 1500 });
+        }
+      });
     }
 
-    // ยืนยันตัวตน (Login)
+    // 3. ยืนยันตัวตน (Login)
     function handleLogin() {
       const user = document.getElementById('usernameInput').value;
       const pass = document.getElementById('passwordInput').value;
-      
       if(!user || !pass) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุ Username และ Password', 'warning');
-      Swal.fire({ title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      
+      Swal.fire({ title: 'กำลังตรวจสอบสิทธิ์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-      apiRequest('verifyLogin', { 
-        username: user, password: pass, assetId: SYSTEM_ASSET_ID, deviceData: { userAgent: navigator.userAgent } 
-      })
+      apiRequest('verifyLogin', { username: user, password: pass, assetId: SYSTEM_ASSET_ID, deviceData: { userAgent: navigator.userAgent } })
       .then(userData => {
         currentUser = userData;
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('formSection').style.display = 'block';
-        document.getElementById('displayInspector').innerText = userData.name;
-        
+        document.getElementById('displayInspector').innerText = userData.name; // โชว์ชื่อจาก Col E
         buildUI();
-        if(navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(pos => gpsLocation = `${pos.coords.latitude},${pos.coords.longitude}`);
-        }
-        Swal.close();
-        resetSession();
+        if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => gpsLocation = `${pos.coords.latitude},${pos.coords.longitude}`);
+        Swal.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', text: `ยินดีต้อนรับคุณ ${userData.name}`, timer: 1500, showConfirmButton: false });
       })
       .catch(err => Swal.fire('ปฏิเสธการเข้าถึง', err.message, 'error'));
     }
 
-    // วาดหน้าจอถ่ายรูปและเช็คลิสต์
+    // 4. วาดฟอร์ม
     function buildUI() {
       const photoLabels = isEmergencyLight ? ["ตัวเครื่อง", "ไฟสถานะ AC", "ทดสอบแสง", "ปลั๊กไฟ"] : ["เต็มตัว", "มาตรวัด", "สลักล็อก", "สายฉีด"];
       let photoHtml = '';
@@ -309,7 +299,7 @@
         photoHtml += `
           <label class="photo-box">
             <input type="file" accept="image/jpeg, image/png" capture="environment" style="display:none;" onchange="processImg(event, ${i})">
-            <i class="fa-solid fa-camera"></i><span style="font-size:0.8rem; margin-top:5px;">${photoLabels[i]}</span>
+            <i class="fa-solid fa-camera" style="font-size:1.5rem; color:var(--primary);"></i><span style="font-size:0.8rem; margin-top:5px;">${photoLabels[i]}</span>
             <img id="img${i}"><div class="photo-del" id="del${i}" onclick="removeImg(event, ${i})"><i class="fa-solid fa-times"></i></div>
           </label>
         `;
@@ -319,7 +309,7 @@
       let checkHtml = '';
       checksList.forEach((item, idx) => {
         checkHtml += `
-          <div class="checklist-item"><span>${idx+1}. ${item}</span>
+          <div class="checklist-item"><span style="flex:1;">${idx+1}. ${item}</span>
           <label class="switch"><input type="checkbox" id="chk${idx}" checked><span class="slider"></span></label></div>`;
       });
       document.getElementById('checklistArea').innerHTML = checkHtml;
@@ -355,57 +345,59 @@
       document.getElementById(`del${index}`).style.display = 'none';
     }
 
-    // บันทึกและส่งข้อมูลกลับไปที่ Google Sheets (เพื่อออก PDF ใน AppSheet)
+    // 5. บันทึกผล
     function submitInspection() {
       if(isSubmitting) return;
       const uploadedCount = photos.filter(p => p).length;
       if(uploadedCount < 2) return Swal.fire('ข้อมูลไม่ครบ', 'บังคับถ่ายภาพอย่างน้อย 2 มุม', 'warning');
 
-      isSubmitting = true;
-      document.getElementById('submitBtn').disabled = true;
-      Swal.fire({ title: 'กำลังบันทึกเข้าระบบส่วนกลาง...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      Swal.fire({
+        title: 'ยืนยันการบันทึกข้อมูล?',
+        text: "เมื่อส่งแล้วจะไม่สามารถแก้ไขได้",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0033a0',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'ยืนยัน',
+        cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          isSubmitting = true;
+          document.getElementById('submitBtn').disabled = true;
+          Swal.fire({ title: 'กำลังเข้ารหัสและอัปโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-      let finalResult = "PASS";
-      const checkValues = [];
-      for(let i=0; i<5; i++) {
-        const el = document.getElementById(`chk${i}`);
-        const val = el ? (el.checked ? "Pass" : "Fail") : "";
-        checkValues.push(val);
-        if(val === "Fail") finalResult = "FAIL";
-      }
+          let finalResult = "PASS";
+          const checkValues = [];
+          for(let i=0; i<5; i++) {
+            const el = document.getElementById(`chk${i}`);
+            const val = el ? (el.checked ? "Pass" : "Fail") : "";
+            checkValues.push(val);
+            if(val === "Fail") finalResult = "FAIL";
+          }
 
-      const payload = {
-        assetId: SYSTEM_ASSET_ID, building: building, inspector: currentUser.name,
-        device: { userAgent: navigator.userAgent }, gps: gpsLocation,
-        result: finalResult, checks: checkValues, photos: photos
-      };
+          const payload = {
+            assetId: SYSTEM_ASSET_ID, 
+            building: document.getElementById('vBuilding').innerText, 
+            inspector: currentUser.name,
+            device: { userAgent: navigator.userAgent }, 
+            gps: gpsLocation,
+            result: finalResult, 
+            checks: checkValues, 
+            photos: photos
+          };
 
-      apiRequest('processInspection', { data: payload })
-        .then(() => {
-          Swal.fire({icon: 'success', title: 'เสร็จสิ้น', text: 'ข้อมูลส่งไปยัง AppSheet เพื่อสร้าง PDF แล้ว', confirmButtonColor: '#0033a0'})
-          .then(() => location.reload());
-        })
-        .catch(err => {
-          isSubmitting = false;
-          document.getElementById('submitBtn').disabled = false;
-          Swal.fire('เกิดข้อผิดพลาด', err.message, 'error');
-        });
-    }
-
-    function loadDashboard() {
-      if (currentUser.role !== 'Admin' && currentUser.role !== 'Viewer') {
-        return Swal.fire('ปฏิเสธการเข้าถึง', 'สงวนสิทธิ์ Dashboard สำหรับ Admin', 'warning');
-      }
-      document.getElementById('formSection').style.display = 'none';
-      document.getElementById('dashboardSection').style.display = 'block';
-      
-      apiRequest('getDashboardStats', { role: currentUser.role })
-        .then(res => {
-          document.getElementById('dashTotal').innerText = res.total;
-          document.getElementById('dashPass').innerText = res.pass;
-          document.getElementById('dashFail').innerText = res.fail;
-        })
-        .catch(err => Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'));
+          apiRequest('processInspection', { data: payload })
+            .then(() => {
+              Swal.fire({icon: 'success', title: 'สำเร็จ', text: 'ข้อมูลถูกส่งเข้า Data Center แล้ว', confirmButtonColor: '#0033a0'})
+              .then(() => location.reload());
+            })
+            .catch(err => {
+              isSubmitting = false;
+              document.getElementById('submitBtn').disabled = false;
+              Swal.fire('ข้อผิดพลาด', err.message, 'error');
+            });
+        }
+      });
     }
   </script>
 </body>
