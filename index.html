@@ -68,9 +68,6 @@
     .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s;}
     input:checked + .slider { background-color: var(--success); }
     input:checked + .slider:before { transform: translateX(22px); }
-
-    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-    .dash-card { padding: 20px; border-radius: 12px; text-align: center; border: 1px solid var(--border); background: var(--bg);}
   </style>
 </head>
 <body>
@@ -150,7 +147,7 @@
   
   <script>
     // =================================================================
-    // ⚠️ นำลิงก์ Web App URL (หลังบ้าน) มาใส่ที่นี่
+    // ⚠️ นำลิงก์ Web App URL (หลังบ้าน) มาใส่ที่ตัวแปร API_URL นี้
     // =================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbzYR-nd2RmHna2MOjEv6YnWHgx24lGr5P8YO0NCCGIdmgT5ck9FlFzLalE0AEhvwbz6/exec";
     
@@ -166,6 +163,7 @@
     let isSubmitting = false;
     let photos = [undefined, undefined, undefined, undefined];
     let gpsLocation = "0,0";
+    let sessionTimer;
 
     document.getElementById('vAssetId').innerText = SYSTEM_ASSET_ID;
     document.getElementById('vType').innerText = isEmergencyLight ? "Emergency Light" : "Fire Extinguisher";
@@ -186,6 +184,7 @@
       }
     }
 
+    // ฟังก์ชันยิง API กลาง
     async function apiRequest(action, payload) {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -216,7 +215,7 @@
             document.getElementById('vStatus').innerHTML = "<div class='status-badge' style='color:#10b981; border-color:#10b981; background:rgba(16, 185, 129, 0.1);'><i class='fa-solid fa-circle-check'></i> ปกติ (PASS)</div>";
           } else {
             document.getElementById('vStatus').innerHTML = "<div class='status-badge' style='color:var(--text-muted);'><i class='fa-regular fa-clock'></i> รอดำเนินการ</div>";
-            // 🚨 แจ้งเตือน Popup ทันทีที่ยังไม่ตรวจ
+            // Popup แจ้งเตือนเมื่อยังไม่ตรวจ
             Swal.fire({
               icon: 'warning',
               title: 'ถึงรอบการตรวจสอบ',
@@ -242,9 +241,21 @@
         });
     });
 
-    // 2. Navigation Popups
+    // Session Timeout
+    function resetSession() {
+      clearTimeout(sessionTimer);
+      if(currentUser) {
+        sessionTimer = setTimeout(() => {
+          Swal.fire({ icon: 'warning', title: 'หมดเวลา', text: 'กรุณาเข้าสู่ระบบใหม่', allowOutsideClick: false })
+          .then(() => location.reload());
+        }, 15 * 60 * 1000); 
+      }
+    }
+    ['click', 'touchstart', 'keypress'].forEach(e => document.addEventListener(e, resetSession));
+
+    // Router & Logout
     function showLogin() {
-      Swal.fire({ title: 'เข้าสู่ระบบเจ้าหน้าที่?', showCancelButton: true, confirmButtonText: 'ใช่, ไปหน้าล็อกอิน', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0033a0'})
+      Swal.fire({ title: 'เข้าสู่ระบบเจ้าหน้าที่?', showCancelButton: true, confirmButtonText: 'ไปหน้าล็อกอิน', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#0033a0'})
       .then((res) => {
         if(res.isConfirmed) {
           document.getElementById('viewMode').style.display = 'none';
@@ -283,10 +294,12 @@
         currentUser = userData;
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('formSection').style.display = 'block';
-        document.getElementById('displayInspector').innerText = userData.name; // โชว์ชื่อจาก Col E
+        document.getElementById('displayInspector').innerText = userData.name; // แสดงชื่อจริงจาก Col E ที่ส่งมาจากฝั่ง Backend
+        
         buildUI();
         if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => gpsLocation = `${pos.coords.latitude},${pos.coords.longitude}`);
-        Swal.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', text: `ยินดีต้อนรับคุณ ${userData.name}`, timer: 1500, showConfirmButton: false });
+        Swal.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', text: `ยินดีต้อนรับ ${userData.name}`, timer: 1500, showConfirmButton: false });
+        resetSession();
       })
       .catch(err => Swal.fire('ปฏิเสธการเข้าถึง', err.message, 'error'));
     }
@@ -388,7 +401,7 @@
 
           apiRequest('processInspection', { data: payload })
             .then(() => {
-              Swal.fire({icon: 'success', title: 'สำเร็จ', text: 'ข้อมูลถูกส่งเข้า Data Center แล้ว', confirmButtonColor: '#0033a0'})
+              Swal.fire({icon: 'success', title: 'สำเร็จ', text: 'ข้อมูลถูกส่งเข้าฐานข้อมูลแล้ว', confirmButtonColor: '#0033a0'})
               .then(() => location.reload());
             })
             .catch(err => {
