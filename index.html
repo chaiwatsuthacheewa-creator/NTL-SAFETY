@@ -11,59 +11,45 @@
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
   <style>
-    /* 🎨 1. Base Variables & Light Mode Backgrounds */
-    :root { 
-      --bg: #f1f5f9; 
-      --surface: #ffffff; 
-      --text: #1e293b; 
-      --text-muted: #64748b; 
-      --border: #e2e8f0; 
-      --success: #10b981; 
-      --danger: #ef4444; 
-    }
-    
-    /* 🌗 2. Dark Mode Overrides (แก้เฉพาะพื้นหลังและตัวหนังสือ) */
-    body.dark-mode { 
-      --bg: #0f172a; 
-      --surface: #1e293b; 
-      --text: #f8fafc; 
-      --text-muted: #94a3b8; 
-      --border: #334155; 
-    }
+    /* 🎨 1. Base Variables */
+    :root { --bg: #f8fafc; --surface: #ffffff; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; }
+    body.dark-mode { --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; }
 
-    /* 🎨 3. 5-Color Themes (แยกจัดการเฉพาะสีหลัก ไม่กวนพื้นหลัง) */
+    /* 🎨 2. Themes */
     body.theme-blue { --primary: #0033a0; --primary-hover: #002277; }
     body.theme-green { --primary: #059669; --primary-hover: #047857; }
     body.theme-pink { --primary: #db2777; --primary-hover: #be185d; }
     body.theme-red { --primary: #dc2626; --primary-hover: #b91c1c; }
     body.theme-purple { --primary: #7c3aed; --primary-hover: #6d28d9; }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-    body { font-family: 'Prompt', sans-serif; background: #000; color: var(--text); margin: 0; padding: 4px; display: flex; height: 100vh; overflow: hidden; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; margin: 0; padding: 0; }
+    body { font-family: 'Prompt', sans-serif; background: #000; color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
-    /* ⚡ Futuristic Edge Glow */
-    .glow-wrapper { position: relative; width: 100%; height: 100%; border-radius: 24px; padding: 2px; background: linear-gradient(90deg, var(--primary), rgba(255,255,255,0.1), var(--success), rgba(255,255,255,0.1), var(--primary)); background-size: 400%; animation: edge-glow 15s linear infinite; display: flex;}
+    /* ⚡ Soft Edge Glow */
+    .glow-wrapper { position: absolute; inset: 0; padding: 3px; background: linear-gradient(90deg, var(--primary), rgba(255,255,255,0.05), var(--success), rgba(255,255,255,0.05), var(--primary)); background-size: 400%; animation: edge-glow 15s linear infinite; display: flex;}
     @keyframes edge-glow { 0% { background-position: 0 0; } 50% { background-position: 400% 0; } 100% { background-position: 0 0; } }
     
-    .app-container { background: var(--surface); border-radius: 22px; display: flex; width: 100%; height: 100%; position: relative; z-index: 1; overflow: hidden;}
+    .app-container { background: var(--bg); border-radius: 22px; display: flex; width: 100%; height: 100%; position: relative; z-index: 1; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5);}
     
-    .sidebar { display: none; width: 260px; background: var(--surface); border-right: 1px solid var(--border); flex-direction: column; padding: 25px 0; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.02); transition: 0.3s;}
-    .sidebar.collapsed { width: 0; padding: 0; overflow: hidden; opacity: 0; }
+    .sidebar { display: none; width: 260px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); flex-direction: column; padding: 25px 0; z-index: 100; transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);}
+    .sidebar.collapsed { margin-left: -260px; }
     .sidebar-logo { text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 30px; }
     .sidebar-menu { display: flex; flex-direction: column; gap: 8px; padding: 0 15px; }
-    .sidebar-btn { padding: 14px 20px; border-radius: 12px; border: none; background: transparent; color: var(--text-muted); font-family: inherit; font-weight: 500; font-size: 0.95rem; text-align: left; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px;}
+    .sidebar-btn { padding: 14px 20px; border-radius: 12px; border: none; background: transparent; color: var(--text-muted); font-family: inherit; font-weight: 500; font-size: 0.95rem; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 15px;}
     .sidebar-btn:hover { background: var(--bg); color: var(--primary); }
     .sidebar-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     
-    .main-content { flex: 1; height: 100%; overflow-y: auto; padding: 20px 20px 90px 20px; position: relative; }
+    .main-content { flex: 1; height: 100%; overflow-y: auto; padding: 25px 25px 90px 25px; position: relative; }
     
-    .bottom-nav { display: flex; position: absolute; bottom: 0; left: 0; width: 100%; background: var(--surface); justify-content: space-around; padding: 12px 0 20px; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 1000; border-top: 1px solid var(--border); transition: transform 0.3s;}
+    .bottom-nav { display: flex; position: absolute; bottom: 0; left: 0; width: 100%; background: var(--surface); justify-content: space-around; padding: 12px 0 20px; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 1000; border-top: 1px solid var(--border); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);}
     .bottom-nav.collapsed { transform: translateY(100%); }
-    .bottom-nav-btn { background: none; border: none; color: var(--text-muted); font-family: inherit; font-size: 0.75rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; flex: 1;}
+    .bottom-nav-btn { background: none; border: none; color: var(--text-muted); font-family: inherit; font-size: 0.75rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 1;}
     .bottom-nav-btn.active { color: var(--primary); }
+    .bottom-nav-btn i { font-size: 1.3rem; margin-bottom: 5px; transition: 0.2s;}
+    .bottom-nav-btn.active i { transform: translateY(-3px) scale(1.1); }
 
-    .hide-menu-btn { position: absolute; bottom: 85px; right: 20px; background: var(--primary); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; z-index: 1001; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s;}
-    .hide-menu-btn.collapsed { bottom: 20px; transform: rotate(180deg); }
+    .hide-menu-btn { position: absolute; bottom: 85px; right: 20px; background: var(--primary); color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; z-index: 1001; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;}
+    .hide-menu-btn.collapsed { bottom: 20px; transform: rotate(180deg); background: var(--surface); color: var(--primary); border: 2px solid var(--primary);}
 
     @media (min-width: 768px) {
       .sidebar { display: flex; } .bottom-nav { display: none !important; } .main-content { padding: 30px 40px; }
@@ -71,47 +57,98 @@
       .hide-menu-btn.collapsed { left: 20px; transform: rotate(-90deg); }
     }
 
-    .connection-status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; margin-top: 5px; border: 1px solid transparent; transition: 0.3s;}
+    .connection-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; margin-top: 5px; border: 1px solid transparent; }
 
-    .header-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
-    .header-title-area { display: flex; flex-direction: column; align-items: flex-start;}
-    .page-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: var(--text); }
+    .header-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+    .page-title { font-size: 1.6rem; font-weight: 700; color: var(--text); letter-spacing: -0.5px;}
     
-    .card { background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border); margin-bottom: 20px; }
-    .btn { padding: 12px 20px; border: none; border-radius: 10px; font-family: inherit; font-weight: 600; font-size: 1rem; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
-    .btn-primary { background: var(--primary); color: white; width: 100%;}
+    .card { background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); border: 1px solid var(--border); margin-bottom: 20px; }
+    .btn { padding: 10px 18px; border: none; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 0.95rem; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: white; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.1);}
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); width: 100%;}
     input.form-control { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 1rem; margin-bottom: 15px; outline: none; background: var(--bg); color: var(--text);}
 
-    /* 🔭 Sci-Fi Scanner UI */
-    .scanner-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 3px solid var(--primary); box-shadow: 0 0 20px rgba(0, 51, 160, 0.3); background: #000; }
-    #reader { width: 100%; }
-    #reader video { object-fit: cover; }
+    .scanner-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 3px solid var(--primary); background: #000; }
+    #reader { width: 100%; } #reader video { object-fit: cover; }
     .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: rgba(56, 189, 248, 0.8); box-shadow: 0 0 15px rgba(56, 189, 248, 1); animation: scan 2s infinite linear; z-index: 10; pointer-events: none;}
     @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
-    .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .photo-box { background: var(--bg); border: 2px dashed var(--primary); border-radius: 12px; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: 0.2s;}
-    .photo-box:hover { background: rgba(0,51,160,0.05); }
+    .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+    .photo-box { background: var(--bg); border: 2px dashed var(--border); border-radius: 12px; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: 0.2s;}
+    .photo-box:hover { background: rgba(0,0,0,0.02); border-color: var(--text-muted); }
     .photo-box img { position: absolute; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1;}
     .photo-del { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.9); color: var(--danger); border-radius: 50%; width: 28px; height: 28px; display: none; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .upload-icon-circle { background: var(--surface); color: var(--text-muted); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-    .tab-nav { display: flex; background: var(--bg); border-radius: 12px; padding: 5px; margin-bottom: 20px; border: 1px solid var(--border); }
+    /* 🎚️ Sliding Toggle */
+    .checklist-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed var(--border); }
+    .checklist-row:last-child { border-bottom: none; }
+    .checklist-text { flex: 1; font-weight: 600; font-size: 0.95rem; color: var(--text); padding-right: 15px; line-height: 1.4; }
+    
+    .toggle-container { position: relative; display: inline-block; width: 96px; height: 34px; flex-shrink: 0; }
+    .toggle-container input { opacity: 0; width: 0; height: 0; position: absolute;}
+    .toggle-track { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger); border-radius: 34px; transition: .4s; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    .toggle-thumb { position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .toggle-text-pass { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; font-weight: 700; color: white; transition: .4s; opacity: 0;}
+    .toggle-text-fail { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; font-weight: 700; color: white; transition: .4s; opacity: 1;}
+    
+    .toggle-container input:checked + .toggle-track { background-color: var(--success); }
+    .toggle-container input:checked + .toggle-track .toggle-thumb { transform: translateX(62px); } 
+    .toggle-container input:checked + .toggle-track .toggle-text-pass { opacity: 1; }
+    .toggle-container input:checked + .toggle-track .toggle-text-fail { opacity: 0; }
+
+    /* 📋 Tables & Tabs */
+    .tab-nav { display: flex; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); }
     .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: inherit; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); background: transparent; border: none; border-radius: 8px; cursor: pointer; }
     .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .yearly-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: var(--surface); color: var(--text); font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .yearly-table th, .yearly-table td { border: 1px solid var(--border); padding: 10px 5px; text-align: center; }
-    .yearly-table th { background: rgba(0, 51, 160, 0.05); color: var(--primary); font-weight: 600; }
+    
+    .data-table { width: 100%; border-collapse: collapse; background: var(--surface); color: var(--text); font-size: 0.85rem; }
+    .data-table th, .data-table td { border-bottom: 1px solid var(--border); padding: 14px 15px; text-align: left; vertical-align: middle;}
+    
+    /* แก้ไขหัวตารางไม่ให้โปร่งใส */
+    .data-table th { background: var(--surface); color: var(--primary); font-weight: 600; position: sticky; top: 0; z-index: 10; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+    .data-table td.center-col, .data-table th.center-col { text-align: center; }
+    
+    /* 🏷️ Professional Badges */
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.3px;}
+    .badge-pass { background: rgba(16,185,129,0.15); color: #065f46; }
+    .badge-fail { background: rgba(239,68,68,0.15); color: #991b1b; }
+    .badge-pending { background: rgba(100,116,139,0.15); color: #334155; }
+    body.dark-mode .badge-pass { background: rgba(16,185,129,0.2); color: #34d399; }
+    body.dark-mode .badge-fail { background: rgba(239,68,68,0.2); color: #f87171; }
+    body.dark-mode .badge-pending { background: rgba(100,116,139,0.2); color: #94a3b8; }
 
     .theme-selector { position: absolute; top: 70px; right: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: none; z-index: 2000; flex-direction: column; gap: 5px; min-width: 180px;}
     .theme-option { display: flex; align-items: center; gap: 12px; padding: 10px 15px; cursor: pointer; border-radius: 8px; font-size: 0.9rem; color: var(--text); font-weight: 500;}
     .theme-option:hover { background: var(--bg); }
     .color-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);}
     
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .stat-box { background: var(--surface); padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-    .stat-box h2 { margin: 0 0 5px; font-size: 2rem; }
-    .stat-box p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-bottom: 25px; }
+    .stat-box { background: var(--surface); padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: center; cursor:pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+    .stat-box:hover, .stat-box.active { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); border-bottom-color: var(--primary);}
+    .stat-box h2 { margin: 0 0 5px; font-size: 1.8rem; }
+    .stat-box p { margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;}
+
+    /* แก้ไขแท็บตัวกรองอาคารให้ไม่มีเส้นขอบรอบด้าน */
+    .filter-tabs { display: flex; gap: 20px; overflow-x: auto; border-bottom: 2px solid var(--border); margin-bottom: 15px; scrollbar-width: none; }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+    .filter-tab { background: transparent; border: none; outline: none; color: var(--text-muted); font-size: 0.95rem; font-family: inherit; font-weight: 500; padding: 10px 5px; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: 0.2s;}
+    .filter-tab:hover { color: var(--primary); }
+    .filter-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+    .master-row { cursor: pointer; transition: 0.2s; }
+    .master-row:hover { background: rgba(0,51,160,0.03); }
+    
+    /* 💎 Global SweetAlert2 Professional Theme */
+    .swal2-popup { font-family: 'Prompt', sans-serif !important; border-radius: 20px !important; box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important; padding: 2em !important; background: var(--surface) !important; color: var(--text) !important;}
+    .swal2-title { font-size: 1.4rem !important; color: var(--text) !important; padding-top: 0 !important; font-weight: 700 !important; }
+    .swal2-html-container { font-size: 1rem !important; color: var(--text-muted) !important; margin: 1em 1.6em 0.3em !important;}
+    .swal2-confirm { background-color: var(--primary) !important; border-radius: 12px !important; padding: 12px 30px !important; font-weight: 600 !important; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(0,51,160,0.2) !important; }
+    .swal2-cancel { border-radius: 12px !important; padding: 12px 30px !important; font-weight: 600 !important; font-size: 1rem !important; }
+    .admin-modal-popup { max-width: 95%; }
+    .admin-modal-title { text-align: left !important; border-bottom: 2px solid var(--border); padding-bottom: 15px !important; }
+
   </style>
 </head>
 <body>
@@ -125,7 +162,9 @@
       <button class="sidebar-btn" id="sideNavView" onclick="navTo('view')"><i class="fa-solid fa-eye"></i> โหมด View</button>
       <button class="sidebar-btn" id="sideNavScan" onclick="navTo('scanner')"><i class="fa-solid fa-qrcode"></i> โหมด Inspector</button>
       <button class="sidebar-btn" id="sideNavDash" onclick="navTo('dashboard')"><i class="fa-solid fa-chart-pie"></i> โหมด Admin</button>
-      <button class="sidebar-btn" id="sideNavAuth" onclick="toggleAuth()"><i class="fa-solid fa-circle-user"></i> <span id="txtSideAuth">ล็อกอินช่าง</span></button>
+      <button class="sidebar-btn" id="sideNavAuth" onclick="toggleAuth()">
+        <i class="fa-solid fa-circle-user" id="iconSideAuth"></i> <span id="txtSideAuth">ล็อกอินช่าง</span>
+      </button>
     </div>
   </div>
 
@@ -134,12 +173,12 @@
   <div class="main-content">
     
     <div class="header-bar">
-      <div class="header-title-area">
+      <div style="display:flex; flex-direction:column;">
         <h2 class="page-title" id="topPageTitle">NTL System</h2>
         <div id="connBadge" class="connection-status"></div>
       </div>
       <div>
-        <button class="btn btn-outline" style="width:auto; padding:10px 14px; border-radius:50%; margin-right:5px;" onclick="location.href='https://www.google.com'"><i class="fa-solid fa-house"></i></button>
+        <button class="btn btn-outline" id="btnHomeLink" style="display:none; width:auto; padding:10px 14px; border-radius:50%; margin-right:5px;" onclick="location.href='https://www.google.com'"><i class="fa-solid fa-house"></i></button>
         <button class="btn btn-outline" style="width:auto; padding:10px 14px; border-radius:50%;" onclick="toggleThemePicker()"><i class="fa-solid fa-palette"></i></button>
       </div>
       
@@ -185,26 +224,27 @@
 
         <div id="tabYearly" style="display: none;">
           <h3 style="margin:0 0 10px; color:var(--text); text-align:left; font-size:1rem;">ประวัติปี <span id="vYear" style="color:var(--primary);">...</span></h3>
-          <table class="yearly-table">
-            <thead><tr><th width="20%">ด/ป</th><th width="30%">วันที่</th><th width="20%">สถานะ</th><th width="30%">ผู้ตรวจ</th></tr></thead>
-            <tbody id="yearlyTableBody"><tr><td colspan="4">สแกนเพื่อดูข้อมูล...</td></tr></tbody>
-          </table>
+          <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden;">
+            <table class="data-table">
+              <thead><tr><th>ด/ป</th><th>วันที่</th><th class="center-col">สถานะ</th><th>ผู้ตรวจ</th></tr></thead>
+              <tbody id="yearlyTableBody"><tr><td colspan="4" class="center-col">สแกนเพื่อดูข้อมูล...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
       
-      <button class="btn btn-primary" id="btnInspectNow" style="margin-bottom:20px; display:none;"><i class="fa-solid fa-pen-to-square"></i> บันทึกผลการตรวจสอบ</button>
+      <button class="btn btn-primary" id="btnInspectNow" style="margin-bottom:20px; display:none; border-radius:12px; font-size:1.05rem;"><i class="fa-solid fa-pen-to-square"></i> บันทึกผลการตรวจสอบ</button>
 
       <div class="card" style="text-align:center;">
         <p style="margin:0 0 10px; font-weight:600; text-align:left;">ค้นหาอุปกรณ์ (View Mode):</p>
         <div style="display:flex; gap:10px;">
-          <input type="text" class="form-control" id="viewSearchId" placeholder="รหัสอุปกรณ์..." style="margin:0;">
+          <input type="text" class="form-control" id="viewSearchId" placeholder="เช่น NTL-FE-ARI-001" style="margin:0;">
           <button class="btn btn-primary" style="width:auto; padding:0 20px;" onclick="navTo('view'); loadAssetData(document.getElementById('viewSearchId').value, 'view')"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
       </div>
     </div>
 
     <div id="scannerSection" style="display: none; max-width:600px; margin:0 auto;">
-      
       <div class="tab-nav" style="margin-bottom:15px;">
         <button class="tab-btn active" id="btnScanTab" onclick="switchInspectorTab('scan')"><i class="fa-solid fa-camera"></i> สแกน</button>
         <button class="tab-btn" id="btnHistoryTab" onclick="switchInspectorTab('history')"><i class="fa-solid fa-list-check"></i> ผลงานของฉัน</button>
@@ -230,10 +270,12 @@
              <div><h2 style="margin:0; color:var(--success);" id="myPass">0</h2><span style="font-size:0.8rem;">ปกติ</span></div>
              <div><h2 style="margin:0; color:var(--danger);" id="myFail">0</h2><span style="font-size:0.8rem;">ชำรุด</span></div>
           </div>
-          <table class="yearly-table">
-            <thead><tr><th>เวลา</th><th>รหัสถัง</th><th>ผล</th></tr></thead>
-            <tbody id="myHistoryList"><tr><td colspan="3">กำลังโหลด...</td></tr></tbody>
-          </table>
+          <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden;">
+            <table class="data-table">
+              <thead><tr><th>เวลา</th><th>รหัสถัง</th><th class="center-col">ผล</th></tr></thead>
+              <tbody id="myHistoryList"><tr><td colspan="3" class="center-col">กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -242,10 +284,10 @@
       <div class="card" style="max-width: 450px; margin: 0 auto; text-align:center; padding:30px 20px;">
         <div style="font-size:3rem; color:var(--primary); margin-bottom:10px;"><i class="fa-solid fa-id-badge"></i></div>
         <h3 style="color:var(--text); margin-top:0;">เข้าสู่ระบบ</h3>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:25px;">กรุณายืนยันตัวตนเพื่อเข้าถึงระบบบันทึก</p>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:25px;">กรุณายืนยันตัวตนเพื่อเข้าถึงระบบ</p>
         <input type="text" class="form-control" id="usernameInput" placeholder="Username">
         <input type="password" class="form-control" id="passwordInput" placeholder="Password">
-        <button class="btn btn-primary" onclick="handleLogin()" style="padding:15px; font-size:1.1rem;"><i class="fa-solid fa-right-to-bracket"></i> ล็อกอิน</button>
+        <button class="btn btn-primary" onclick="handleLogin()" style="padding:15px; font-size:1.1rem; border-radius:12px;"><i class="fa-solid fa-right-to-bracket"></i> ล็อกอิน</button>
       </div>
     </div>
 
@@ -265,34 +307,35 @@
         <strong id="displayInspector" style="color:var(--primary);"></strong>
       </div>
 
-      <label style="font-weight:600; font-size:0.9rem; margin-left:5px;">อัปโหลดรูปหลักฐาน (2 รูปขึ้นไป)</label>
+      <label style="font-weight:600; font-size:0.9rem; margin-left:5px; color:var(--text);">อัปโหลดรูปหลักฐาน (2 รูปขึ้นไป)</label>
       <div class="photo-grid" id="photoArea" style="margin-bottom: 25px;"></div>
 
-      <label style="font-weight:600; font-size:0.9rem; margin-left:5px;">รายการตรวจสอบ (ดึงจาก Sheet)</label>
-      <div class="checklist-container" id="checklistArea" style="margin-bottom: 25px;"></div>
+      <label style="font-weight:600; font-size:0.9rem; margin-left:5px; color:var(--text);">รายการตรวจสอบ (เลื่อนขวา=Pass / ซ้าย=Fail)</label>
+      <div class="card" id="checklistArea" style="margin-top: 10px; padding:10px 20px;"></div>
 
-      <button class="btn btn-primary" id="submitBtn" onclick="submitInspection()" style="font-size:1.1rem; padding:16px; box-shadow:0 4px 15px rgba(0,51,160,0.2);">
-        <i class="fa-solid fa-cloud-arrow-up"></i> บันทึก & สแกนถังถัดไป
+      <button class="btn btn-primary" id="submitBtn" onclick="submitInspection()" style="font-size:1.1rem; padding:16px; border-radius:12px; box-shadow:0 4px 15px rgba(0,51,160,0.2);">
+        <i class="fa-solid fa-cloud-arrow-up"></i> ยืนยันบันทึกผล
       </button>
     </div>
 
-    <div id="dashboardSection" style="display: none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-        <h3 style="margin:0; color:var(--text); font-size:1.2rem;"><i class="fa-solid fa-chart-line"></i> Command Center</h3>
-        <button class="btn btn-primary" style="width:auto; font-size:0.85rem; padding:8px 15px;" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Export .xlsx</button>
+    <div id="dashboardSection" style="display: none; max-width:1000px; margin:0 auto;">
+      
+      <div class="stat-grid" id="dashStatCards">
+        <div class="stat-box active" style="border-top: 4px solid var(--primary);" onclick="setDashFilter('ALL', this)"><h2 id="dashTotal" style="color:var(--primary);">0</h2><p>ทั้งหมด</p></div>
+        <div class="stat-box" style="border-top: 4px solid var(--success);" onclick="setDashFilter('PASS', this)"><h2 id="dashPass" style="color:var(--success);">0</h2><p>ปกติ</p></div>
+        <div class="stat-box" style="border-top: 4px solid var(--danger);" onclick="setDashFilter('FAIL', this)"><h2 id="dashFail" style="color:var(--danger);">0</h2><p>ชำรุด</p></div>
+        <div class="stat-box" style="border-top: 4px solid var(--text-muted);" onclick="setDashFilter('PENDING', this)"><h2 id="dashPending" style="color:var(--text-muted);">0</h2><p>รอตรวจ</p></div>
       </div>
 
-      <div class="stat-grid" style="display:flex; gap:15px; margin-bottom:20px; overflow-x:auto;">
-        <div class="stat-box" style="border-top: 4px solid var(--primary); min-width:120px; flex:1;"><h2 id="dashTotal" style="color:var(--primary);">0</h2><p>ทั้งหมด</p></div>
-        <div class="stat-box" style="border-top: 4px solid var(--success); min-width:120px; flex:1;"><h2 id="dashPass" style="color:var(--success);">0</h2><p>ปกติ</p></div>
-        <div class="stat-box" style="border-top: 4px solid var(--danger); min-width:120px; flex:1;"><h2 id="dashFail" style="color:var(--danger);">0</h2><p>ชำรุด</p></div>
-        <div class="stat-box" style="border-top: 4px solid var(--text-muted); min-width:120px; flex:1;"><h2 id="dashPending" style="color:var(--text-muted);">0</h2><p>รอตรวจ</p></div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid var(--border); margin-bottom: 15px; padding-bottom:5px;">
+        <div class="filter-tabs" id="dashBuildingFilters" style="border:none; margin:0;"></div>
+        <button class="btn btn-primary" style="width:auto; font-size:0.85rem; padding:8px 15px; border-radius:8px; margin-bottom:5px;" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Export .xlsx</button>
       </div>
 
-      <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
-        <table class="yearly-table" style="margin:0; border:none;">
-          <thead><tr><th>รหัสถัง</th><th>ชั้น</th><th>สถานะ</th></tr></thead>
-          <tbody id="allAssetsBody"><tr><td colspan="3">กำลังดึงข้อมูล...</td></tr></tbody>
+      <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; background:var(--surface); box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+        <table class="data-table" style="margin:0; border:none;">
+          <thead><tr><th>รหัสถัง</th><th>อาคาร (ชั้น)</th><th class="center-col">สถานะ</th></tr></thead>
+          <tbody id="allAssetsBody"><tr><td colspan="3" class="center-col">กำลังดึงข้อมูล...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -305,21 +348,26 @@
   <button class="bottom-nav-btn active" id="botNavView" onclick="navTo('view')"><i class="fa-solid fa-eye"></i><span>View</span></button>
   <button class="bottom-nav-btn" id="botNavScan" onclick="navTo('scanner')"><i class="fa-solid fa-qrcode"></i><span>Inspector</span></button>
   <button class="bottom-nav-btn" id="botNavDash" onclick="navTo('dashboard')"><i class="fa-solid fa-chart-pie"></i><span>Admin</span></button>
-  <button class="bottom-nav-btn" id="botNavAuth" onclick="toggleAuth()"><i class="fa-solid fa-circle-user"></i><span id="txtBotAuth">ล็อกอิน</span></button>
+  <button class="bottom-nav-btn" id="botNavAuth" onclick="toggleAuth()">
+    <i class="fa-solid fa-circle-user" id="iconBotAuth"></i><span id="txtBotAuth">ล็อกอิน</span>
+  </button>
 </div>
   
   <script>
-    // =================================================================
-    // ⚠️ นำลิงก์ Web App URL ของคุณมาวางที่นี่
-    // =================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbzYR-nd2RmHna2MOjEv6YnWHgx24lGr5P8YO0NCCGIdmgT5ck9FlFzLalE0AEhvwbz6/exec";
     
     let currentUser = null; let currentAssetForForm = ""; let isSubmitting = false; 
     let photos = [undefined, undefined, undefined, undefined]; let gpsLocation = "0,0"; 
-    let html5QrcodeScanner = null; let dashboardDataCache = []; let isCameraRunning = false;
+    let html5QrcodeScanner = null; let isCameraRunning = false;
     let dynamicChecklistForm = [];
+    
+    let dashboardDataCache = []; let dashBuildingsCache = [];
+    let currentDashStatus = 'ALL'; let currentDashBuilding = 'ALL';
 
-    // --- 🎨 Color & Theme Logic ---
+    // Helper Function สำหรับใส่ Text อย่างปลอดภัย (แก้บัค innerText Error เด็ดขาด)
+    const setTxt = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; }
+    const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; }
+
     function initTheme() { 
       const savedColor = localStorage.getItem('ntl_color') || 'blue'; 
       const savedMode = localStorage.getItem('ntl_mode') || 'light';
@@ -328,19 +376,20 @@
     }
     function toggleThemePicker() { 
       const picker = document.getElementById('themePicker'); 
-      picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex'; 
+      if(picker) picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex'; 
     }
     function setColorTheme(color) { 
       document.body.classList.remove('theme-blue', 'theme-green', 'theme-pink', 'theme-red', 'theme-purple');
       document.body.classList.add(`theme-${color}`); 
       localStorage.setItem('ntl_color', color); 
-      document.getElementById('themePicker').style.display = 'none'; 
+      const picker = document.getElementById('themePicker');
+      if(picker) picker.style.display = 'none'; 
     }
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
-      const isDark = document.body.classList.contains('dark-mode');
-      localStorage.setItem('ntl_mode', isDark ? 'dark' : 'light');
-      document.getElementById('themePicker').style.display = 'none';
+      localStorage.setItem('ntl_mode', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+      const picker = document.getElementById('themePicker');
+      if(picker) picker.style.display = 'none';
     }
     
     let menuHidden = false;
@@ -353,26 +402,17 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       initTheme();
-      
       const badge = document.getElementById('connBadge');
-      badge.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังตรวจสอบระบบ...';
-      badge.style.background = 'rgba(100, 116, 139, 0.1)'; 
-      badge.style.color = 'var(--text-muted)'; 
-      badge.style.borderColor = 'var(--border)';
-
+      if(badge) {
+          badge.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังตรวจสอบระบบ...';
+          badge.style.color = 'var(--text-muted)'; 
+      }
+      
       setTimeout(() => {
-        apiRequest('checkConnection', {})
-          .then(() => {
-            badge.innerHTML = '<i class="fa-solid fa-wifi"></i> ออนไลน์';
-            badge.style.background = 'rgba(16, 185, 129, 0.1)'; 
-            badge.style.color = 'var(--success)'; 
-            badge.style.borderColor = 'rgba(16, 185, 129, 0.2)';
-          })
-          .catch(() => {
-            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ออฟไลน์';
-            badge.style.background = 'rgba(239, 68, 68, 0.1)'; 
-            badge.style.color = 'var(--danger)'; 
-            badge.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+        apiRequest('checkConnection', {}).then(() => {
+            if(badge) { badge.innerHTML = '<i class="fa-solid fa-wifi"></i> ออนไลน์'; badge.style.color = 'var(--success)'; }
+          }).catch(() => {
+            if(badge) { badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ออฟไลน์'; badge.style.color = 'var(--danger)'; }
           });
       }, 1000);
 
@@ -380,32 +420,41 @@
       if (savedUser) { currentUser = JSON.parse(savedUser); updateAuthUI(); }
       if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => gpsLocation = `${pos.coords.latitude},${pos.coords.longitude}`);
       
-      // เมื่อสแกนจากแอปมือถือ/ไลน์ -> เข้าหน้า View เป็นหน้าแรกเสมอ
       const urlParams = new URLSearchParams(window.location.search);
       const assetFromUrl = urlParams.get('id');
-      if (assetFromUrl) {
-          navTo('view');
-          loadAssetData(assetFromUrl.toUpperCase(), 'view'); 
-      } else {
-          navTo('view'); 
-      }
+      if (assetFromUrl) { navTo('view'); loadAssetData(assetFromUrl.toUpperCase(), 'view'); } 
+      else { navTo('view'); }
     });
 
     function showScreen(screenId, title) {
-      ['viewSection', 'scannerSection', 'loginSection', 'formSection', 'dashboardSection'].forEach(id => document.getElementById(id).style.display = 'none');
-      document.getElementById(screenId).style.display = 'block';
-      document.getElementById('topPageTitle').innerText = title;
+      ['viewSection', 'scannerSection', 'loginSection', 'formSection', 'dashboardSection'].forEach(id => {
+          const el = document.getElementById(id);
+          if(el) el.style.display = 'none';
+      });
+      const targetEl = document.getElementById(screenId);
+      if(targetEl) targetEl.style.display = 'block';
+      
+      const homeBtn = document.getElementById('btnHomeLink');
+      if (homeBtn) homeBtn.style.display = (screenId === 'dashboardSection') ? 'inline-flex' : 'none';
+
+      if(screenId === 'dashboardSection') {
+         setHtml('topPageTitle', '<i class="fa-solid fa-chart-pie"></i> ภาพรวมระบบ (Overview)'); 
+      } else {
+         setTxt('topPageTitle', title);
+      }
     }
 
     function navTo(target) {
       document.querySelectorAll('.sidebar-btn, .bottom-nav-btn').forEach(b => b.classList.remove('active'));
 
       if (target === 'view') {
-        document.getElementById('sideNavView').classList.add('active'); document.getElementById('botNavView').classList.add('active');
-        stopScanner(); showScreen('viewSection', 'โหมดผู้ใช้ทั่วไป (View)');
+        const sideNav = document.getElementById('sideNavView'); if(sideNav) sideNav.classList.add('active');
+        const botNav = document.getElementById('botNavView'); if(botNav) botNav.classList.add('active');
+        stopScanner(); showScreen('viewSection', 'NTL System');
       }
       else if (target === 'scanner') {
-        document.getElementById('sideNavScan').classList.add('active'); document.getElementById('botNavScan').classList.add('active');
+        const sideNav = document.getElementById('sideNavScan'); if(sideNav) sideNav.classList.add('active');
+        const botNav = document.getElementById('botNavScan'); if(botNav) botNav.classList.add('active');
         if(!currentUser) { 
           Swal.fire({title: 'ข้อมูลสงวนสิทธิ์', text: 'กรุณาล็อกอินเจ้าหน้าที่ก่อน', icon: 'info', allowOutsideClick: false}).then(()=> navTo('login')); 
           return;
@@ -413,10 +462,11 @@
         showScreen('scannerSection', 'โหมดตรวจสอบ (Inspector)'); initScanner();
       } 
       else if (target === 'dashboard') {
-        document.getElementById('sideNavDash').classList.add('active'); document.getElementById('botNavDash').classList.add('active');
+        const sideNav = document.getElementById('sideNavDash'); if(sideNav) sideNav.classList.add('active');
+        const botNav = document.getElementById('botNavDash'); if(botNav) botNav.classList.add('active');
         stopScanner();
         if (currentUser && (currentUser.role === 'Admin' || currentUser.role === 'Viewer')) {
-          showScreen('dashboardSection', 'Command Center'); loadDashboardData();
+          showScreen('dashboardSection', ''); loadDashboardData();
         } else {
           Swal.fire({title: 'สงวนสิทธิ์', text: 'เฉพาะบัญชี Admin', icon: 'warning', allowOutsideClick: false}).then(() => navTo('login'));
         }
@@ -439,19 +489,18 @@
 
     function updateAuthUI() {
       const authTxt = currentUser ? "ออกจากระบบ" : "ล็อกอินช่าง";
-      const authIcon = currentUser ? '<i class="fa-solid fa-power-off" style="color:var(--danger);"></i>' : '<i class="fa-solid fa-circle-user"></i>';
+      setTxt('txtSideAuth', authTxt);
+      setTxt('txtBotAuth', authTxt);
+
+      const iconSide = document.getElementById('iconSideAuth');
+      if (iconSide) { iconSide.className = currentUser ? 'fa-solid fa-power-off' : 'fa-solid fa-circle-user'; iconSide.style.color = currentUser ? 'var(--danger)' : 'inherit'; }
       
-      const sideNav = document.getElementById('sideNavAuth');
-      if (sideNav) sideNav.innerHTML = `${authIcon} <span id="txtSideAuth" style="color:${currentUser ? 'var(--danger)' : 'inherit'}">${authTxt}</span>`;
-      
-      const botNav = document.getElementById('botNavAuth');
-      if (botNav) botNav.innerHTML = `${authIcon} <span id="txtBotAuth" style="color:${currentUser ? 'var(--danger)' : 'inherit'}">${authTxt}</span>`;
-      
+      const iconBot = document.getElementById('iconBotAuth');
+      if (iconBot) { iconBot.className = currentUser ? 'fa-solid fa-power-off' : 'fa-solid fa-circle-user'; iconBot.style.color = currentUser ? 'var(--danger)' : 'inherit'; }
+
       const titleEl = document.getElementById('topPageTitle');
-      if(currentUser && currentUser.role === 'Inspector' && titleEl) {
-        titleEl.innerText = `สวัสดี, ${currentUser.name}`;
-      } else if (!currentUser && titleEl) {
-        titleEl.innerText = 'NTL System';
+      if(titleEl && currentUser && currentUser.role === 'Inspector') {
+         titleEl.innerText = `สวัสดี, ${currentUser.name}`;
       }
     }
 
@@ -461,10 +510,19 @@
     }
 
     function switchViewTab(tab) {
-      document.getElementById('btnTabCurrent').classList.remove('active'); document.getElementById('btnTabYearly').classList.remove('active');
-      document.getElementById('tabCurrent').style.display = 'none'; document.getElementById('tabYearly').style.display = 'none';
-      if (tab === 'current') { document.getElementById('btnTabCurrent').classList.add('active'); document.getElementById('tabCurrent').style.display = 'block'; } 
-      else { document.getElementById('btnTabYearly').classList.add('active'); document.getElementById('tabYearly').style.display = 'block'; }
+      const btnCur = document.getElementById('btnTabCurrent'); if(btnCur) btnCur.classList.remove('active');
+      const btnYr = document.getElementById('btnTabYearly'); if(btnYr) btnYr.classList.remove('active');
+      
+      const tabCur = document.getElementById('tabCurrent'); if(tabCur) tabCur.style.display = 'none';
+      const tabYr = document.getElementById('tabYearly'); if(tabYr) tabYr.style.display = 'none';
+      
+      if (tab === 'current') { 
+        if(btnCur) btnCur.classList.add('active'); 
+        if(tabCur) tabCur.style.display = 'block'; 
+      } else { 
+        if(btnYr) btnYr.classList.add('active'); 
+        if(tabYr) tabYr.style.display = 'block'; 
+      }
     }
 
     function loadAssetData(assetId, mode='inspector') {
@@ -475,63 +533,69 @@
         Swal.close(); 
         
         if (mode === 'view') {
-          document.getElementById('vType').innerText = assetId.includes("EL-") ? "Emergency Light" : "Fire Extinguisher";
-          document.getElementById('vAssetIdView').innerText = assetId; document.getElementById('vBuildingView').innerText = data.building; document.getElementById('vFloorView').innerText = data.floor;
-          document.getElementById('vMonth').innerText = data.currentMonth; document.getElementById('vYear').innerText = data.currentYear;
-          document.getElementById('vDate').innerText = data.lastDate; document.getElementById('vInspector').innerText = data.lastInspector;
+          setTxt('vType', assetId.includes("EL-") ? "Emergency Light" : "Fire Extinguisher");
+          setTxt('vAssetIdView', assetId); 
+          setTxt('vBuildingView', data.building); 
+          setTxt('vFloorView', data.floor);
+          setTxt('vMonth', data.currentMonth); 
+          setTxt('vYear', data.currentYear);
+          setTxt('vDate', data.lastDate); 
+          setTxt('vInspector', data.lastInspector);
 
-          if (data.lastStatus === "FAIL") document.getElementById('vStatus').innerHTML = "<div style='color:var(--danger); font-size:1.2rem; font-weight:700;'><i class='fa-solid fa-triangle-exclamation'></i> ชำรุด</div>";
-          else if (data.lastStatus === "PASS") document.getElementById('vStatus').innerHTML = "<div style='color:var(--success); font-size:1.2rem; font-weight:700;'><i class='fa-solid fa-circle-check'></i> ปกติ</div>";
-          else document.getElementById('vStatus').innerHTML = "<div style='color:var(--text-muted); font-size:1.2rem; font-weight:700;'><i class='fa-regular fa-clock'></i> รอตรวจ</div>";
+          if (data.lastStatus === "FAIL") setHtml('vStatus', "<div class='status-badge badge-fail' style='font-size:1.1rem;'><i class='fa-solid fa-triangle-exclamation'></i> ชำรุด</div>");
+          else if (data.lastStatus === "PASS") setHtml('vStatus', "<div class='status-badge badge-pass' style='font-size:1.1rem;'><i class='fa-solid fa-circle-check'></i> ปกติ</div>");
+          else setHtml('vStatus', "<div class='status-badge badge-pending' style='font-size:1.1rem;'><i class='fa-regular fa-clock'></i> รอตรวจ</div>");
 
           if (data.lastStatus !== "PENDING" && data.checks.length > 0) {
             let chkHtml = ""; 
             for(let i=0; i<5; i++) { let icon = data.checks[i] === "Pass" ? "<span style='color:var(--success);'>✔</span>" : "<span style='color:var(--danger);'>✘</span>"; chkHtml += `<li>${icon} ${data.dynamicChecklist[i]}</li>`; }
-            document.getElementById('vChecklistList').innerHTML = chkHtml; document.getElementById('vChecklistArea').style.display = "block";
-          } else { document.getElementById('vChecklistArea').style.display = "none"; }
+            setHtml('vChecklistList', chkHtml);
+            const clArea = document.getElementById('vChecklistArea'); if(clArea) clArea.style.display = "block";
+          } else { 
+            const clArea = document.getElementById('vChecklistArea'); if(clArea) clArea.style.display = "none"; 
+          }
 
           let tableHtml = ""; const currentMonthIndex = new Date().getMonth();
           data.yearlyLogs.forEach((log, index) => {
-            let statusIcon = "⚪"; if(log.status === "PASS") statusIcon = "🟢"; else if(log.status === "FAIL") statusIcon = "🔴";
-            let rowStyle = (index === currentMonthIndex) ? 'background: rgba(56, 189, 248, 0.05); font-weight:600;' : '';
-            tableHtml += `<tr style="${rowStyle}"><td>${log.monthName}</td><td>${log.date}</td><td>${statusIcon}</td><td style="font-size:0.75rem;">${log.inspector}</td></tr>`;
+            let badge = "<div class='status-badge badge-pending'>⚪ รอตรวจ</div>"; 
+            if(log.status === "PASS") badge = "<div class='status-badge badge-pass'>🟢 ปกติ</div>"; 
+            else if(log.status === "FAIL") badge = "<div class='status-badge badge-fail'>🔴 ชำรุด</div>";
+            let rowStyle = (index === currentMonthIndex) ? 'background: rgba(0, 51, 160, 0.05); font-weight:600;' : '';
+            tableHtml += `<tr style="${rowStyle}"><td>${log.monthName}</td><td>${log.date}</td><td class="center-col">${badge}</td><td style="font-size:0.75rem;">${log.inspector}</td></tr>`;
           });
-          document.getElementById('yearlyTableBody').innerHTML = tableHtml;
+          setHtml('yearlyTableBody', tableHtml);
 
-          // ควบคุมปุ่มอ้างอิงสถานะ
           const btnInspect = document.getElementById('btnInspectNow');
-          if(currentUser && (currentUser.role === 'Inspector' || currentUser.role === 'Admin')) {
-              if(data.lastStatus !== "PENDING") {
-                  btnInspect.style.display = 'block';
-                  btnInspect.className = 'btn btn-outline';
-                  btnInspect.innerHTML = '<i class="fa-solid fa-check"></i> ตรวจสอบแล้ว (กลับหน้าสแกน)';
-                  btnInspect.onclick = () => navTo('scanner');
-              } else {
-                  btnInspect.style.display = 'block';
-                  btnInspect.className = 'btn btn-primary';
-                  btnInspect.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> บันทึกผลการตรวจสอบ';
-                  btnInspect.onclick = () => {
-                      currentAssetForForm = assetId; dynamicChecklistForm = data.dynamicChecklist;
-                      document.getElementById('vAssetIdForm').innerText = assetId; document.getElementById('vBuildingForm').innerText = data.building; document.getElementById('vFloorForm').innerText = data.floor;
-                      document.getElementById('displayInspector').innerText = currentUser.name;
-                      buildFormUI(); navTo('form');
-                  };
-              }
-          } else {
-              btnInspect.style.display = 'block';
-              btnInspect.className = 'btn btn-primary';
-              btnInspect.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> ล็อกอินเพื่อบันทึกผล';
-              btnInspect.onclick = () => navTo('login');
+          if(btnInspect) {
+            if(currentUser && (currentUser.role === 'Inspector' || currentUser.role === 'Admin')) {
+                if(data.lastStatus !== "PENDING") {
+                    btnInspect.style.display = 'block'; btnInspect.className = 'btn btn-outline';
+                    btnInspect.innerHTML = '<i class="fa-solid fa-check"></i> ตรวจสอบแล้ว (กลับหน้าสแกน)';
+                    btnInspect.onclick = () => navTo('scanner');
+                } else {
+                    btnInspect.style.display = 'block'; btnInspect.className = 'btn btn-primary';
+                    btnInspect.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> บันทึกผลการตรวจสอบ';
+                    btnInspect.onclick = () => {
+                        currentAssetForForm = assetId; dynamicChecklistForm = data.dynamicChecklist;
+                        setTxt('vAssetIdForm', assetId); setTxt('vBuildingForm', data.building); setTxt('vFloorForm', data.floor);
+                        setTxt('displayInspector', currentUser.name);
+                        buildFormUI(); navTo('form');
+                    };
+                }
+            } else {
+                btnInspect.style.display = 'block'; btnInspect.className = 'btn btn-primary';
+                btnInspect.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> ล็อกอินเพื่อบันทึกผล';
+                btnInspect.onclick = () => navTo('login');
+            }
           }
-
         } 
         else if (mode === 'inspector') {
           if(data.lastStatus !== "PENDING") {
              Swal.fire({icon:'info', title:'ตรวจไปแล้ว', text:`รหัส ${assetId} ตรวจแล้วในเดือนนี้`, timer: 2000, showConfirmButton: false, allowOutsideClick: false}).then(()=> initScanner());
           } else {
              currentAssetForForm = assetId; dynamicChecklistForm = data.dynamicChecklist;
-             document.getElementById('vAssetIdForm').innerText = assetId; document.getElementById('vBuildingForm').innerText = data.building; document.getElementById('vFloorForm').innerText = data.floor;
-             if(currentUser) document.getElementById('displayInspector').innerText = currentUser.name;
+             setTxt('vAssetIdForm', assetId); setTxt('vBuildingForm', data.building); setTxt('vFloorForm', data.floor);
+             if(currentUser) setTxt('displayInspector', currentUser.name);
              buildFormUI(); navTo('form');
           }
         }
@@ -539,10 +603,21 @@
     }
 
     function switchInspectorTab(tab) {
-      document.getElementById('btnScanTab').classList.remove('active'); document.getElementById('btnHistoryTab').classList.remove('active');
-      document.getElementById('inspectorScanTab').style.display = 'none'; document.getElementById('inspectorHistoryTab').style.display = 'none';
-      if (tab === 'scan') { document.getElementById('btnScanTab').classList.add('active'); document.getElementById('inspectorScanTab').style.display = 'block'; initScanner(); } 
-      else { document.getElementById('btnHistoryTab').classList.add('active'); document.getElementById('inspectorHistoryTab').style.display = 'block'; stopScanner(); loadMyHistory(); }
+      const btnS = document.getElementById('btnScanTab'); if(btnS) btnS.classList.remove('active');
+      const btnH = document.getElementById('btnHistoryTab'); if(btnH) btnH.classList.remove('active');
+      const tabS = document.getElementById('inspectorScanTab'); if(tabS) tabS.style.display = 'none';
+      const tabH = document.getElementById('inspectorHistoryTab'); if(tabH) tabH.style.display = 'none';
+      
+      if (tab === 'scan') { 
+        if(btnS) btnS.classList.add('active'); 
+        if(tabS) tabS.style.display = 'block'; 
+        initScanner(); 
+      } 
+      else { 
+        if(btnH) btnH.classList.add('active'); 
+        if(tabH) tabH.style.display = 'block'; 
+        stopScanner(); loadMyHistory(); 
+      }
     }
 
     function initScanner() {
@@ -554,82 +629,187 @@
     function onScanSuccess(decodedText) {
       stopScanner(); let assetId = decodedText;
       if (decodedText.includes('?id=')) assetId = new URL(decodedText).searchParams.get('id');
-      
-      // สแกนในแอป ก็พามาหน้า View เป็นหน้าแรกเสมอ
-      navTo('view');
-      loadAssetData(assetId.toUpperCase(), 'view');
+      navTo('view'); loadAssetData(assetId.toUpperCase(), 'view');
     }
 
     function buildFormUI() {
       let pUrl = ''; photos = [undefined,undefined,undefined,undefined];
       const pLabels = currentAssetForForm.includes("EL-") ? ["ภาพกว้าง", "ไฟสถานะ", "แสงสว่าง", "ปลั๊กไฟ"] : ["ภาพกว้าง", "มาตรวัด", "สลักล็อก", "สายฉีด"];
-      for(let i=0; i<4; i++) pUrl += `<label class="photo-box"><input type="file" accept="image/jpeg, image/png" capture="environment" style="display:none;" onchange="processImg(event, ${i})"><div style="background:var(--primary); color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:10px;"><i class="fa-solid fa-cloud-arrow-up"></i></div><span style="font-size:0.8rem; font-weight:600; color:var(--text);">${pLabels[i]}</span><img id="img${i}"><div class="photo-del" id="del${i}" onclick="removeImg(event, ${i})"><i class="fa-solid fa-times"></i></div></label>`;
-      document.getElementById('photoArea').innerHTML = pUrl;
+      for(let i=0; i<4; i++) pUrl += `<label class="photo-box"><input type="file" accept="image/jpeg, image/png" capture="environment" style="display:none;" onchange="processImg(event, ${i})"><div class="upload-icon-circle"><i class="fa-solid fa-cloud-arrow-up"></i></div><span style="font-size:0.8rem; font-weight:600; color:var(--text);">${pLabels[i]}</span><img id="img${i}"><div class="photo-del" id="del${i}" onclick="removeImg(event, ${i})"><i class="fa-solid fa-times"></i></div></label>`;
+      setHtml('photoArea', pUrl);
       
       let cUrl = '';
-      dynamicChecklistForm.forEach((item, idx) => { cUrl += `<div class="checklist-item"><span style="flex:1;">${idx+1}. ${item}</span><label class="switch"><input type="checkbox" id="chk${idx}" checked><span class="slider"></span></label></div>`; });
-      document.getElementById('checklistArea').innerHTML = cUrl;
+      dynamicChecklistForm.forEach((item, idx) => { 
+        cUrl += `
+          <div class="checklist-row">
+            <span class="checklist-text">${idx+1}. ${item}</span>
+            <label class="toggle-container">
+              <input type="checkbox" id="chk${idx}" checked onchange="updateToggleUI(this, ${idx})">
+              <span class="toggle-track">
+                <span class="toggle-text-fail">FAIL</span>
+                <span class="toggle-text-pass">PASS</span>
+                <span class="toggle-thumb"></span>
+              </span>
+            </label>
+            <input type="hidden" id="chkVal${idx}" value="Pass">
+          </div>
+        `; 
+      });
+      setHtml('checklistArea', cUrl);
+    }
+
+    function updateToggleUI(checkbox, idx) {
+        const valEl = document.getElementById(`chkVal${idx}`);
+        if(valEl) valEl.value = checkbox.checked ? 'Pass' : 'Fail';
     }
 
     function processImg(e, index) {
       const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
-      reader.onload = function(evt) { const img = new Image(); img.onload = function() { const canvas = document.createElement("canvas"); const ctx = canvas.getContext("2d"); const MAX = 800; let w = img.width, h = img.height; if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } } else { if (h > MAX) { w *= MAX / h; h = MAX; } } canvas.width = w; canvas.height = h; ctx.drawImage(img, 0, 0, w, h); photos[index] = canvas.toDataURL("image/jpeg", 0.7); document.getElementById(`img${index}`).src = photos[index]; document.getElementById(`img${index}`).style.display = 'block'; document.getElementById(`del${index}`).style.display = 'flex'; }; img.src = evt.target.result; }; reader.readAsDataURL(file);
+      reader.onload = function(evt) { const img = new Image(); img.onload = function() { const canvas = document.createElement("canvas"); const ctx = canvas.getContext("2d"); const MAX = 800; let w = img.width, h = img.height; if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } } else { if (h > MAX) { w *= MAX / h; h = MAX; } } canvas.width = w; canvas.height = h; ctx.drawImage(img, 0, 0, w, h); photos[index] = canvas.toDataURL("image/jpeg", 0.7); const imgEl = document.getElementById(`img${index}`); if(imgEl){ imgEl.src = photos[index]; imgEl.style.display = 'block'; } const delEl = document.getElementById(`del${index}`); if(delEl) delEl.style.display = 'flex'; }; img.src = evt.target.result; }; reader.readAsDataURL(file);
     }
-    function removeImg(e, index) { e.preventDefault(); photos[index] = undefined; document.getElementById(`img${index}`).style.display = 'none'; document.getElementById(`del${index}`).style.display = 'none'; }
+    function removeImg(e, index) { e.preventDefault(); photos[index] = undefined; const imgEl = document.getElementById(`img${index}`); if(imgEl) imgEl.style.display = 'none'; const delEl = document.getElementById(`del${index}`); if(delEl) delEl.style.display = 'none'; }
 
     function submitInspection() {
       if(isSubmitting) return; const uCount = photos.filter(p => p).length;
       if(uCount < 2) return Swal.fire({title: 'รูปไม่ครบ', text: 'ถ่ายภาพอย่างน้อย 2 มุม', icon: 'warning', allowOutsideClick: false});
-      isSubmitting = true; document.getElementById('submitBtn').disabled = true; 
-      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      let finalRes = "PASS"; const chkVal = [];
-      for(let i=0; i<5; i++) { const el = document.getElementById(`chk${i}`); const val = el ? (el.checked ? "Pass" : "Fail") : ""; chkVal.push(val); if(val === "Fail") finalRes = "FAIL"; }
       
-      const payload = { assetId: currentAssetForForm, building: document.getElementById('vBuildingForm').innerText, inspector: currentUser.name, device: { userAgent: navigator.userAgent }, gps: gpsLocation, result: finalRes, checks: chkVal, photos: photos };
+      const subBtn = document.getElementById('submitBtn');
+      isSubmitting = true; if(subBtn) subBtn.disabled = true; 
+      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      
+      let finalRes = "PASS"; const chkVal = [];
+      for(let i=0; i<5; i++) { 
+        const vEl = document.getElementById(`chkVal${i}`);
+        const val = vEl ? vEl.value : 'Pass';
+        chkVal.push(val); 
+        if(val === "Fail") finalRes = "FAIL"; 
+      }
+      
+      const bName = document.getElementById('vBuildingForm');
+      const payload = { assetId: currentAssetForForm, building: bName ? bName.innerText : '', inspector: currentUser.name, device: { userAgent: navigator.userAgent }, gps: gpsLocation, result: finalRes, checks: chkVal, photos: photos };
       apiRequest('processInspection', { data: payload })
       .then(() => { 
-        isSubmitting = false; document.getElementById('submitBtn').disabled = false;
+        isSubmitting = false; if(subBtn) subBtn.disabled = false;
         Swal.fire({icon: 'success', title: 'บันทึกเรียบร้อย', timer: 1500, showConfirmButton: false, allowOutsideClick: false}).then(() => navTo('scanner')); 
       })
-      .catch(err => { isSubmitting = false; document.getElementById('submitBtn').disabled = false; Swal.fire({title: 'ผิดพลาด', text: err.message, icon: 'error', allowOutsideClick: false}); });
+      .catch(err => { isSubmitting = false; if(subBtn) subBtn.disabled = false; Swal.fire({title: 'ผิดพลาด', text: err.message, icon: 'error', allowOutsideClick: false}); });
     }
 
     function loadMyHistory() {
       if(!currentUser) return;
-      document.getElementById('myHistoryList').innerHTML = '<tr><td colspan="3"><i class="fa-solid fa-spinner fa-spin"></i> โหลด...</td></tr>';
+      setHtml('myHistoryList', '<tr><td colspan="3" class="center-col"><i class="fa-solid fa-spinner fa-spin"></i> โหลด...</td></tr>');
       apiRequest('getInspectorHistory', { inspectorName: currentUser.name }).then(data => {
-        document.getElementById('myTotal').innerText = data.total; document.getElementById('myPass').innerText = data.pass; document.getElementById('myFail').innerText = data.fail;
+        setTxt('myTotal', data.total); setTxt('myPass', data.pass); setTxt('myFail', data.fail);
         let html = "";
-        data.logs.forEach(l => { let icon = l.status === "PASS" ? "🟢" : "🔴"; html += `<tr><td>${l.date}</td><td>${l.id}</td><td>${icon}</td></tr>`; });
-        document.getElementById('myHistoryList').innerHTML = html || '<tr><td colspan="3">ยังไม่มีผลงานในเดือนนี้</td></tr>';
+        data.logs.forEach(l => { 
+          let badge = l.status === "PASS" ? "<div class='status-badge badge-pass'>🟢</div>" : "<div class='status-badge badge-fail'>🔴</div>"; 
+          html += `<tr><td>${l.date}</td><td>${l.id}</td><td class="center-col">${badge}</td></tr>`; 
+        });
+        setHtml('myHistoryList', html || '<tr><td colspan="3" class="center-col">ยังไม่มีผลงานในเดือนนี้</td></tr>');
       });
     }
 
     function handleLogin() {
-      const user = document.getElementById('usernameInput').value; const pass = document.getElementById('passwordInput').value;
+      const uEl = document.getElementById('usernameInput'); const pEl = document.getElementById('passwordInput');
+      const user = uEl ? uEl.value : ''; const pass = pEl ? pEl.value : '';
       if(!user || !pass) return Swal.fire({title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกให้ครบถ้วน', icon: 'warning', allowOutsideClick: false});
       Swal.fire({ title: 'ตรวจสอบสิทธิ์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       apiRequest('verifyLogin', { username: user, password: pass, deviceData: { userAgent: navigator.userAgent } })
       .then(userData => { 
         currentUser = userData; sessionStorage.setItem('ntl_user', JSON.stringify(userData)); updateAuthUI();
         Swal.fire({ icon: 'success', title: `ยินดีต้อนรับ ${userData.name}`, timer: 1500, showConfirmButton: false, allowOutsideClick: false });
-        document.getElementById('usernameInput').value = ''; document.getElementById('passwordInput').value = '';
+        if(uEl) uEl.value = ''; if(pEl) pEl.value = '';
         if(userData.role === 'Admin') navTo('dashboard'); else navTo('scanner');
       }).catch(err => Swal.fire({title: 'ปฏิเสธการเข้าถึง', text: err.message, icon: 'error', allowOutsideClick: false}));
     }
 
     function loadDashboardData() {
-      document.getElementById('allAssetsBody').innerHTML = '<tr><td colspan="3"><i class="fa-solid fa-spinner fa-spin"></i> ดึงข้อมูล...</td></tr>';
+      setHtml('allAssetsBody', '<tr><td colspan="3" class="center-col"><i class="fa-solid fa-spinner fa-spin"></i> ดึงข้อมูล...</td></tr>');
+      
       apiRequest('getFullDashboardData', {}).then(data => {
-        document.getElementById('dashTotal').innerText = data.total; document.getElementById('dashPass').innerText = data.pass; document.getElementById('dashFail').innerText = data.fail; document.getElementById('dashPending').innerText = data.pending;
-        dashboardDataCache = data.allAssets;
-        let html = "";
-        data.allAssets.forEach(item => {
-          let badge = "⚪ รอตรวจ"; if(item.status === "PASS") badge = "🟢 ปกติ"; if(item.status === "FAIL") badge = "🔴 ชำรุด";
-          html += `<tr><td style="color:var(--primary); font-weight:600;">${item.id}</td><td>${item.floor}</td><td>${badge}</td></tr>`;
-        });
-        document.getElementById('allAssetsBody').innerHTML = html;
+        dashboardDataCache = data.allAssets; dashBuildingsCache = data.buildings;
+        
+        let filterHtml = `<button class="filter-tab active" onclick="setDashBuilding('ALL', this)">ทุกอาคาร</button>`;
+        dashBuildingsCache.forEach(b => { filterHtml += `<button class="filter-tab" onclick="setDashBuilding('${b}', this)">${b}</button>`; });
+        setHtml('dashBuildingFilters', filterHtml);
+        
+        updateDashboardView();
       }).catch(err => Swal.fire({title: 'ข้อผิดพลาด', text: err.message, icon: 'error', allowOutsideClick: false}));
+    }
+
+    function setDashFilter(status, el) {
+        currentDashStatus = status;
+        document.querySelectorAll('#dashStatCards .stat-box').forEach(b => b.classList.remove('active'));
+        if(el) el.classList.add('active');
+        updateDashboardView();
+    }
+    
+    function setDashBuilding(building, el) {
+        currentDashBuilding = building;
+        document.querySelectorAll('#dashBuildingFilters .filter-tab').forEach(b => b.classList.remove('active'));
+        if(el) el.classList.add('active');
+        updateDashboardView();
+    }
+
+    function updateDashboardView() {
+        let filtered = dashboardDataCache;
+        if(currentDashBuilding !== 'ALL') filtered = filtered.filter(a => a.building === currentDashBuilding);
+        
+        let t=0, p=0, f=0, pd=0;
+        filtered.forEach(a => { t++; if(a.status==='PASS') p++; else if(a.status==='FAIL') f++; else pd++; });
+        setTxt('dashTotal', t); setTxt('dashPass', p); setTxt('dashFail', f); setTxt('dashPending', pd);
+
+        if(currentDashStatus !== 'ALL') filtered = filtered.filter(a => a.status === currentDashStatus);
+
+        let html = "";
+        filtered.forEach(item => {
+          let badge = "<div class='status-badge badge-pending'>⚪ รอตรวจ</div>"; 
+          if(item.status === "PASS") badge = "<div class='status-badge badge-pass'>🟢 ปกติ</div>"; 
+          if(item.status === "FAIL") badge = "<div class='status-badge badge-fail'>🔴 ชำรุด</div>";
+          
+          html += `<tr class="master-row" onclick="loadAdminModal('${item.id}')">
+                     <td style="color:var(--primary); font-weight:600;">${item.id}</td>
+                     <td>${item.building} <br><span style="font-size:0.75rem; color:var(--text-muted);">ชั้น ${item.floor}</span></td>
+                     <td class="center-col">${badge}</td>
+                   </tr>`;
+        });
+        setHtml('allAssetsBody', html || '<tr><td colspan="3" class="center-col">ไม่มีข้อมูล</td></tr>');
+    }
+
+    function loadAdminModal(assetId) {
+        Swal.fire({
+            title: `<div class="admin-modal-title"><i class="fa-regular fa-folder-open"></i> ประวัติ: <span style="color:var(--primary);">${assetId}</span></div>`,
+            html: '<div style="margin:30px 0;"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i><br><br>กำลังดึงข้อมูลรายปี...</div>',
+            showConfirmButton: false,
+            showCloseButton: true,
+            allowOutsideClick: false, 
+            customClass: { popup: 'swal2-popup admin-modal-popup' },
+            width: '600px'
+        });
+
+        apiRequest('getAssetData', { assetId: assetId }).then(data => {
+            let tableHtml = `
+              <div style="border-radius:12px; border:1px solid var(--border); overflow:hidden; text-align:left; margin-top:10px;">
+                <table class="data-table" style="margin:0; border:none; width:100%;">
+                  <thead><tr><th>ด/ป</th><th>วันที่</th><th class="center-col">สถานะ</th><th>ผู้ตรวจ</th></tr></thead>
+                  <tbody>`;
+            
+            const currentMonthIndex = new Date().getMonth();
+            data.yearlyLogs.forEach((log, index) => {
+              let badge = "<div class='status-badge badge-pending' style='padding:2px 8px; font-size:0.7rem;'>⚪ รอตรวจ</div>"; 
+              if(log.status === "PASS") badge = "<div class='status-badge badge-pass' style='padding:2px 8px; font-size:0.7rem;'>🟢 ปกติ</div>"; 
+              else if(log.status === "FAIL") badge = "<div class='status-badge badge-fail' style='padding:2px 8px; font-size:0.7rem;'>🔴 ชำรุด</div>";
+              
+              let rowStyle = (index === currentMonthIndex) ? 'background: rgba(0, 51, 160, 0.05); font-weight:600;' : '';
+              tableHtml += `<tr style="${rowStyle}"><td style="font-size:0.85rem;">${log.monthName}</td><td style="font-size:0.85rem;">${log.date}</td><td class="center-col">${badge}</td><td style="font-size:0.75rem;">${log.inspector}</td></tr>`;
+            });
+            tableHtml += `</tbody></table></div>`;
+            tableHtml += `<button class="btn btn-primary" style="margin-top:20px; width:100%; border-radius:10px;" onclick="Swal.close()">ปิดหน้าต่าง</button>`;
+
+            Swal.update({ html: tableHtml });
+        }).catch(err => {
+            Swal.update({ html: `<div style="color:var(--danger); margin:20px 0;"><i class="fa-solid fa-triangle-exclamation"></i> ${err.message}</div>` });
+        });
     }
 
     function exportExcel() {
