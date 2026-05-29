@@ -11,24 +11,41 @@
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
   <style>
-    /* 🎨 5 Themes System */
-    :root { --primary: #0033a0; --primary-hover: #002277; --bg: #f1f5f9; --surface: #ffffff; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; }
-    body.theme-dark { --primary: #38bdf8; --primary-hover: #0284c7; --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; }
-    body.theme-green { --primary: #059669; --primary-hover: #047857; --bg: #f0fdf4; --surface: #ffffff; --text: #064e3b; --text-muted: #34d399; --border: #bbf7d0; }
-    body.theme-pink { --primary: #db2777; --primary-hover: #be185d; --bg: #fdf2f8; --surface: #ffffff; --text: #831843; --text-muted: #f472b6; --border: #fbcfe8; }
-    body.theme-red { --primary: #dc2626; --primary-hover: #b91c1c; --bg: #fef2f2; --surface: #ffffff; --text: #7f1d1d; --text-muted: #f87171; --border: #fecaca; }
-    body.theme-purple { --primary: #7c3aed; --primary-hover: #6d28d9; --bg: #f5f3ff; --surface: #ffffff; --text: #2e1065; --text-muted: #a78bfa; --border: #ddd6fe; }
+    /* 🎨 1. Base Variables & Light Mode Backgrounds */
+    :root { 
+      --bg: #f1f5f9; 
+      --surface: #ffffff; 
+      --text: #1e293b; 
+      --text-muted: #64748b; 
+      --border: #e2e8f0; 
+      --success: #10b981; 
+      --danger: #ef4444; 
+    }
+    
+    /* 🌗 2. Dark Mode Overrides (แก้เฉพาะพื้นหลังและตัวหนังสือ) */
+    body.dark-mode { 
+      --bg: #0f172a; 
+      --surface: #1e293b; 
+      --text: #f8fafc; 
+      --text-muted: #94a3b8; 
+      --border: #334155; 
+    }
+
+    /* 🎨 3. 5-Color Themes (แยกจัดการเฉพาะสีหลัก ไม่กวนพื้นหลัง) */
+    body.theme-blue { --primary: #0033a0; --primary-hover: #002277; }
+    body.theme-green { --primary: #059669; --primary-hover: #047857; }
+    body.theme-pink { --primary: #db2777; --primary-hover: #be185d; }
+    body.theme-red { --primary: #dc2626; --primary-hover: #b91c1c; }
+    body.theme-purple { --primary: #7c3aed; --primary-hover: #6d28d9; }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-    
-    /* เว้นขอบจอนิดนึงให้เห็นไฟวิ่ง */
     body { font-family: 'Prompt', sans-serif; background: #000; color: var(--text); margin: 0; padding: 4px; display: flex; height: 100vh; overflow: hidden; }
 
     /* ⚡ Futuristic Edge Glow */
-    .glow-wrapper { position: relative; width: 100%; height: 100%; border-radius: 24px; padding: 3px; background: linear-gradient(45deg, var(--primary), var(--success), var(--danger), var(--primary)); background-size: 400%; animation: edge-glow 5s linear infinite; display: flex;}
+    .glow-wrapper { position: relative; width: 100%; height: 100%; border-radius: 24px; padding: 2px; background: linear-gradient(90deg, var(--primary), rgba(255,255,255,0.1), var(--success), rgba(255,255,255,0.1), var(--primary)); background-size: 400%; animation: edge-glow 15s linear infinite; display: flex;}
     @keyframes edge-glow { 0% { background-position: 0 0; } 50% { background-position: 400% 0; } 100% { background-position: 0 0; } }
     
-    .app-container { background: var(--surface); border-radius: 20px; display: flex; width: 100%; height: 100%; position: relative; z-index: 1; overflow: hidden;}
+    .app-container { background: var(--surface); border-radius: 22px; display: flex; width: 100%; height: 100%; position: relative; z-index: 1; overflow: hidden;}
     
     .sidebar { display: none; width: 260px; background: var(--surface); border-right: 1px solid var(--border); flex-direction: column; padding: 25px 0; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.02); transition: 0.3s;}
     .sidebar.collapsed { width: 0; padding: 0; overflow: hidden; opacity: 0; }
@@ -127,13 +144,13 @@
       </div>
       
       <div class="theme-selector" id="themePicker">
-        <div class="theme-option" onclick="setTheme('default')"><div class="color-circle" style="background:#0033a0;"></div> น้ำเงิน (Blue)</div>
-        <div class="theme-option" onclick="setTheme('green')"><div class="color-circle" style="background:#059669;"></div> เขียว (Green)</div>
-        <div class="theme-option" onclick="setTheme('pink')"><div class="color-circle" style="background:#db2777;"></div> ชมพู (Pink)</div>
-        <div class="theme-option" onclick="setTheme('red')"><div class="color-circle" style="background:#dc2626;"></div> แดง (Red)</div>
-        <div class="theme-option" onclick="setTheme('purple')"><div class="color-circle" style="background:#7c3aed;"></div> ม่วง (Purple)</div>
+        <div class="theme-option" onclick="setColorTheme('blue')"><div class="color-circle" style="background:#0033a0;"></div> น้ำเงิน (Blue)</div>
+        <div class="theme-option" onclick="setColorTheme('green')"><div class="color-circle" style="background:#059669;"></div> เขียว (Green)</div>
+        <div class="theme-option" onclick="setColorTheme('pink')"><div class="color-circle" style="background:#db2777;"></div> ชมพู (Pink)</div>
+        <div class="theme-option" onclick="setColorTheme('red')"><div class="color-circle" style="background:#dc2626;"></div> แดง (Red)</div>
+        <div class="theme-option" onclick="setColorTheme('purple')"><div class="color-circle" style="background:#7c3aed;"></div> ม่วง (Purple)</div>
         <div style="border-top:1px solid var(--border); margin:5px 0;"></div>
-        <div class="theme-option" onclick="setTheme('dark')"><i class="fa-solid fa-moon"></i> โหมดกลางคืน (Dark)</div>
+        <div class="theme-option" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i> สลับโหมดสว่าง/มืด</div>
       </div>
     </div>
 
@@ -175,11 +192,13 @@
         </div>
       </div>
       
+      <button class="btn btn-primary" id="btnInspectNow" style="margin-bottom:20px; display:none;"><i class="fa-solid fa-pen-to-square"></i> บันทึกผลการตรวจสอบ</button>
+
       <div class="card" style="text-align:center;">
         <p style="margin:0 0 10px; font-weight:600; text-align:left;">ค้นหาอุปกรณ์ (View Mode):</p>
         <div style="display:flex; gap:10px;">
           <input type="text" class="form-control" id="viewSearchId" placeholder="รหัสอุปกรณ์..." style="margin:0;">
-          <button class="btn btn-primary" style="width:auto; padding:0 20px;" onclick="loadAssetData(document.getElementById('viewSearchId').value, 'view')"><i class="fa-solid fa-magnifying-glass"></i></button>
+          <button class="btn btn-primary" style="width:auto; padding:0 20px;" onclick="navTo('view'); loadAssetData(document.getElementById('viewSearchId').value, 'view')"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
       </div>
     </div>
@@ -198,7 +217,7 @@
             <div id="reader"></div>
           </div>
           <p style="margin-top:15px; color:var(--text-muted); font-size:0.9rem; text-align:center;">
-            <i class="fa-solid fa-qrcode"></i> เล็งกล้องไปที่ QR Code เพื่อดึงฟอร์ม
+            <i class="fa-solid fa-qrcode"></i> เล็งกล้องไปที่ QR Code เพื่อดึงข้อมูล
           </p>
         </div>
       </div>
@@ -223,7 +242,7 @@
       <div class="card" style="max-width: 450px; margin: 0 auto; text-align:center; padding:30px 20px;">
         <div style="font-size:3rem; color:var(--primary); margin-bottom:10px;"><i class="fa-solid fa-id-badge"></i></div>
         <h3 style="color:var(--text); margin-top:0;">เข้าสู่ระบบ</h3>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:25px;">กรุณายืนยันตัวตนเพื่อเข้าถึงระบบ</p>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:25px;">กรุณายืนยันตัวตนเพื่อเข้าถึงระบบบันทึก</p>
         <input type="text" class="form-control" id="usernameInput" placeholder="Username">
         <input type="password" class="form-control" id="passwordInput" placeholder="Password">
         <button class="btn btn-primary" onclick="handleLogin()" style="padding:15px; font-size:1.1rem;"><i class="fa-solid fa-right-to-bracket"></i> ล็อกอิน</button>
@@ -300,10 +319,29 @@
     let html5QrcodeScanner = null; let dashboardDataCache = []; let isCameraRunning = false;
     let dynamicChecklistForm = [];
 
-    // --- UI Toggles & Themes ---
-    function initTheme() { const savedTheme = localStorage.getItem('ntl_theme') || 'default'; setTheme(savedTheme); }
-    function toggleThemePicker() { const picker = document.getElementById('themePicker'); picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex'; }
-    function setTheme(themeName) { document.body.className = themeName === 'default' ? '' : `theme-${themeName}`; localStorage.setItem('ntl_theme', themeName); document.getElementById('themePicker').style.display = 'none'; }
+    // --- 🎨 Color & Theme Logic ---
+    function initTheme() { 
+      const savedColor = localStorage.getItem('ntl_color') || 'blue'; 
+      const savedMode = localStorage.getItem('ntl_mode') || 'light';
+      setColorTheme(savedColor);
+      if(savedMode === 'dark') document.body.classList.add('dark-mode');
+    }
+    function toggleThemePicker() { 
+      const picker = document.getElementById('themePicker'); 
+      picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex'; 
+    }
+    function setColorTheme(color) { 
+      document.body.classList.remove('theme-blue', 'theme-green', 'theme-pink', 'theme-red', 'theme-purple');
+      document.body.classList.add(`theme-${color}`); 
+      localStorage.setItem('ntl_color', color); 
+      document.getElementById('themePicker').style.display = 'none'; 
+    }
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('ntl_mode', isDark ? 'dark' : 'light');
+      document.getElementById('themePicker').style.display = 'none';
+    }
     
     let menuHidden = false;
     function toggleMenu() {
@@ -313,13 +351,10 @@
       document.getElementById('hideMenuBtn').classList.toggle('collapsed');
     }
 
-    // --- Initialization ---
     document.addEventListener("DOMContentLoaded", () => {
       initTheme();
       
       const badge = document.getElementById('connBadge');
-      
-      // โชว์สถานะกำลังหมุนเช็คระบบ 1 วินาที
       badge.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังตรวจสอบระบบ...';
       badge.style.background = 'rgba(100, 116, 139, 0.1)'; 
       badge.style.color = 'var(--text-muted)'; 
@@ -343,16 +378,19 @@
 
       const savedUser = sessionStorage.getItem('ntl_user');
       if (savedUser) { currentUser = JSON.parse(savedUser); updateAuthUI(); }
-      
       if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => gpsLocation = `${pos.coords.latitude},${pos.coords.longitude}`);
       
+      // เมื่อสแกนจากแอปมือถือ/ไลน์ -> เข้าหน้า View เป็นหน้าแรกเสมอ
       const urlParams = new URLSearchParams(window.location.search);
       const assetFromUrl = urlParams.get('id');
-      if (assetFromUrl) loadAssetData(assetFromUrl.toUpperCase(), 'view'); 
-      else navTo('view'); 
+      if (assetFromUrl) {
+          navTo('view');
+          loadAssetData(assetFromUrl.toUpperCase(), 'view'); 
+      } else {
+          navTo('view'); 
+      }
     });
 
-    // --- Navigation ---
     function showScreen(screenId, title) {
       ['viewSection', 'scannerSection', 'loginSection', 'formSection', 'dashboardSection'].forEach(id => document.getElementById(id).style.display = 'none');
       document.getElementById(screenId).style.display = 'block';
@@ -368,7 +406,10 @@
       }
       else if (target === 'scanner') {
         document.getElementById('sideNavScan').classList.add('active'); document.getElementById('botNavScan').classList.add('active');
-        if(!currentUser) { Swal.fire('ข้อมูลสงวนสิทธิ์', 'กรุณาล็อกอินเจ้าหน้าที่ก่อนเข้าโหมด Inspector', 'info').then(()=> navTo('login')); return;}
+        if(!currentUser) { 
+          Swal.fire({title: 'ข้อมูลสงวนสิทธิ์', text: 'กรุณาล็อกอินเจ้าหน้าที่ก่อน', icon: 'info', allowOutsideClick: false}).then(()=> navTo('login')); 
+          return;
+        }
         showScreen('scannerSection', 'โหมดตรวจสอบ (Inspector)'); initScanner();
       } 
       else if (target === 'dashboard') {
@@ -377,7 +418,7 @@
         if (currentUser && (currentUser.role === 'Admin' || currentUser.role === 'Viewer')) {
           showScreen('dashboardSection', 'Command Center'); loadDashboardData();
         } else {
-          Swal.fire('สงวนสิทธิ์ Admin', 'กรุณาล็อกอินผู้บริหาร', 'warning').then(() => navTo('login'));
+          Swal.fire({title: 'สงวนสิทธิ์', text: 'เฉพาะบัญชี Admin', icon: 'warning', allowOutsideClick: false}).then(() => navTo('login'));
         }
       }
       else if (target === 'login') {
@@ -388,10 +429,9 @@
       }
     }
 
-    // --- Authentication ---
     function toggleAuth() {
       if (currentUser) {
-        Swal.fire({ title: 'ออกจากระบบ?', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'ออก', cancelButtonText: 'ยกเลิก' }).then((r) => { 
+        Swal.fire({ title: 'ออกจากระบบ?', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'ออก', cancelButtonText: 'ยกเลิก', allowOutsideClick: false }).then((r) => { 
           if(r.isConfirmed){ currentUser=null; sessionStorage.removeItem('ntl_user'); updateAuthUI(); navTo('view'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'ออกจากระบบแล้ว', showConfirmButton:false, timer:1500});} 
         });
       } else { navTo('login'); }
@@ -420,7 +460,6 @@
       const result = await response.json(); if(result.status === 'error') throw new Error(result.message); return result.data;
     }
 
-    // --- View Mode ---
     function switchViewTab(tab) {
       document.getElementById('btnTabCurrent').classList.remove('active'); document.getElementById('btnTabYearly').classList.remove('active');
       document.getElementById('tabCurrent').style.display = 'none'; document.getElementById('tabYearly').style.display = 'none';
@@ -429,8 +468,8 @@
     }
 
     function loadAssetData(assetId, mode='inspector') {
-      if(!assetId || assetId.trim() === "") return Swal.fire('ระบุรหัสผิดพลาด', '', 'warning');
-      Swal.fire({ title: 'ดึงข้อมูล...', didOpen: () => Swal.showLoading() });
+      if(!assetId || assetId.trim() === "") return Swal.fire({title: 'ระบุรหัสผิดพลาด', text: '', icon: 'warning', allowOutsideClick: false});
+      Swal.fire({ title: 'ดึงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       
       apiRequest('getAssetData', { assetId: assetId }).then(data => {
         Swal.close(); 
@@ -458,10 +497,37 @@
             tableHtml += `<tr style="${rowStyle}"><td>${log.monthName}</td><td>${log.date}</td><td>${statusIcon}</td><td style="font-size:0.75rem;">${log.inspector}</td></tr>`;
           });
           document.getElementById('yearlyTableBody').innerHTML = tableHtml;
+
+          // ควบคุมปุ่มอ้างอิงสถานะ
+          const btnInspect = document.getElementById('btnInspectNow');
+          if(currentUser && (currentUser.role === 'Inspector' || currentUser.role === 'Admin')) {
+              if(data.lastStatus !== "PENDING") {
+                  btnInspect.style.display = 'block';
+                  btnInspect.className = 'btn btn-outline';
+                  btnInspect.innerHTML = '<i class="fa-solid fa-check"></i> ตรวจสอบแล้ว (กลับหน้าสแกน)';
+                  btnInspect.onclick = () => navTo('scanner');
+              } else {
+                  btnInspect.style.display = 'block';
+                  btnInspect.className = 'btn btn-primary';
+                  btnInspect.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> บันทึกผลการตรวจสอบ';
+                  btnInspect.onclick = () => {
+                      currentAssetForForm = assetId; dynamicChecklistForm = data.dynamicChecklist;
+                      document.getElementById('vAssetIdForm').innerText = assetId; document.getElementById('vBuildingForm').innerText = data.building; document.getElementById('vFloorForm').innerText = data.floor;
+                      document.getElementById('displayInspector').innerText = currentUser.name;
+                      buildFormUI(); navTo('form');
+                  };
+              }
+          } else {
+              btnInspect.style.display = 'block';
+              btnInspect.className = 'btn btn-primary';
+              btnInspect.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> ล็อกอินเพื่อบันทึกผล';
+              btnInspect.onclick = () => navTo('login');
+          }
+
         } 
         else if (mode === 'inspector') {
           if(data.lastStatus !== "PENDING") {
-             Swal.fire({icon:'info', title:'ตรวจไปแล้ว', text:`รหัส ${assetId} ตรวจแล้วในเดือนนี้`, timer: 2000, showConfirmButton: false}).then(()=> initScanner());
+             Swal.fire({icon:'info', title:'ตรวจไปแล้ว', text:`รหัส ${assetId} ตรวจแล้วในเดือนนี้`, timer: 2000, showConfirmButton: false, allowOutsideClick: false}).then(()=> initScanner());
           } else {
              currentAssetForForm = assetId; dynamicChecklistForm = data.dynamicChecklist;
              document.getElementById('vAssetIdForm').innerText = assetId; document.getElementById('vBuildingForm').innerText = data.building; document.getElementById('vFloorForm').innerText = data.floor;
@@ -469,10 +535,9 @@
              buildFormUI(); navTo('form');
           }
         }
-      }).catch(err => { Swal.fire('ข้อผิดพลาด', err.message, 'error'); if(mode==='inspector') initScanner(); });
+      }).catch(err => { Swal.fire({title: 'ข้อผิดพลาด', text: err.message, icon: 'error', allowOutsideClick: false}); if(mode==='inspector') initScanner(); });
     }
 
-    // --- Inspector Scanner Mode ---
     function switchInspectorTab(tab) {
       document.getElementById('btnScanTab').classList.remove('active'); document.getElementById('btnHistoryTab').classList.remove('active');
       document.getElementById('inspectorScanTab').style.display = 'none'; document.getElementById('inspectorHistoryTab').style.display = 'none';
@@ -489,7 +554,10 @@
     function onScanSuccess(decodedText) {
       stopScanner(); let assetId = decodedText;
       if (decodedText.includes('?id=')) assetId = new URL(decodedText).searchParams.get('id');
-      loadAssetData(assetId.toUpperCase(), 'inspector');
+      
+      // สแกนในแอป ก็พามาหน้า View เป็นหน้าแรกเสมอ
+      navTo('view');
+      loadAssetData(assetId.toUpperCase(), 'view');
     }
 
     function buildFormUI() {
@@ -511,7 +579,7 @@
 
     function submitInspection() {
       if(isSubmitting) return; const uCount = photos.filter(p => p).length;
-      if(uCount < 2) return Swal.fire('รูปไม่ครบ', 'ถ่ายภาพอย่างน้อย 2 มุม', 'warning');
+      if(uCount < 2) return Swal.fire({title: 'รูปไม่ครบ', text: 'ถ่ายภาพอย่างน้อย 2 มุม', icon: 'warning', allowOutsideClick: false});
       isSubmitting = true; document.getElementById('submitBtn').disabled = true; 
       Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       let finalRes = "PASS"; const chkVal = [];
@@ -521,9 +589,9 @@
       apiRequest('processInspection', { data: payload })
       .then(() => { 
         isSubmitting = false; document.getElementById('submitBtn').disabled = false;
-        Swal.fire({icon: 'success', title: 'บันทึกเรียบร้อย', timer: 1500, showConfirmButton: false}).then(() => navTo('scanner')); 
+        Swal.fire({icon: 'success', title: 'บันทึกเรียบร้อย', timer: 1500, showConfirmButton: false, allowOutsideClick: false}).then(() => navTo('scanner')); 
       })
-      .catch(err => { isSubmitting = false; document.getElementById('submitBtn').disabled = false; Swal.fire('ผิดพลาด', err.message, 'error'); });
+      .catch(err => { isSubmitting = false; document.getElementById('submitBtn').disabled = false; Swal.fire({title: 'ผิดพลาด', text: err.message, icon: 'error', allowOutsideClick: false}); });
     }
 
     function loadMyHistory() {
@@ -537,18 +605,17 @@
       });
     }
 
-    // --- Login & Dashboard ---
     function handleLogin() {
       const user = document.getElementById('usernameInput').value; const pass = document.getElementById('passwordInput').value;
-      if(!user || !pass) return Swal.fire('ข้อมูลไม่ครบ', '', 'warning');
-      Swal.fire({ title: 'ตรวจสอบสิทธิ์...', didOpen: () => Swal.showLoading() });
+      if(!user || !pass) return Swal.fire({title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกให้ครบถ้วน', icon: 'warning', allowOutsideClick: false});
+      Swal.fire({ title: 'ตรวจสอบสิทธิ์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       apiRequest('verifyLogin', { username: user, password: pass, deviceData: { userAgent: navigator.userAgent } })
       .then(userData => { 
         currentUser = userData; sessionStorage.setItem('ntl_user', JSON.stringify(userData)); updateAuthUI();
-        Swal.fire({ icon: 'success', title: `ยินดีต้อนรับ ${userData.name}`, timer: 1500, showConfirmButton: false });
+        Swal.fire({ icon: 'success', title: `ยินดีต้อนรับ ${userData.name}`, timer: 1500, showConfirmButton: false, allowOutsideClick: false });
         document.getElementById('usernameInput').value = ''; document.getElementById('passwordInput').value = '';
         if(userData.role === 'Admin') navTo('dashboard'); else navTo('scanner');
-      }).catch(err => Swal.fire('ปฏิเสธการเข้าถึง', err.message, 'error'));
+      }).catch(err => Swal.fire({title: 'ปฏิเสธการเข้าถึง', text: err.message, icon: 'error', allowOutsideClick: false}));
     }
 
     function loadDashboardData() {
@@ -562,11 +629,11 @@
           html += `<tr><td style="color:var(--primary); font-weight:600;">${item.id}</td><td>${item.floor}</td><td>${badge}</td></tr>`;
         });
         document.getElementById('allAssetsBody').innerHTML = html;
-      }).catch(err => Swal.fire('ข้อผิดพลาด', err.message, 'error'));
+      }).catch(err => Swal.fire({title: 'ข้อผิดพลาด', text: err.message, icon: 'error', allowOutsideClick: false}));
     }
 
     function exportExcel() {
-      if(dashboardDataCache.length === 0) return Swal.fire('ไม่มีข้อมูล', '', 'warning');
+      if(dashboardDataCache.length === 0) return Swal.fire({title: 'ไม่มีข้อมูล', text: '', icon: 'warning', allowOutsideClick: false});
       const wsData = [["รหัสอุปกรณ์", "อาคาร", "ชั้น", "สถานะการตรวจเดือนนี้"]];
       dashboardDataCache.forEach(i => wsData.push([i.id, i.building, i.floor, i.status]));
       const ws = XLSX.utils.aoa_to_sheet(wsData); const wb = XLSX.utils.book_new();
