@@ -130,7 +130,6 @@
     .stat-box h2 { margin: 0 0 5px; font-size: 1.8rem; }
     .stat-box p { margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;}
 
-    /* แก้ไขแท็บตัวกรองอาคารให้ไม่มีเส้นขอบรอบด้าน */
     .filter-tabs { display: flex; gap: 20px; overflow-x: auto; border-bottom: 2px solid var(--border); margin-bottom: 15px; scrollbar-width: none; }
     .filter-tabs::-webkit-scrollbar { display: none; }
     .filter-tab { background: transparent; border: none; outline: none; color: var(--text-muted); font-size: 0.95rem; font-family: inherit; font-weight: 500; padding: 10px 5px; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: 0.2s;}
@@ -144,11 +143,13 @@
     .swal2-popup { font-family: 'Prompt', sans-serif !important; border-radius: 20px !important; box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important; padding: 2em !important; background: var(--surface) !important; color: var(--text) !important;}
     .swal2-title { font-size: 1.4rem !important; color: var(--text) !important; padding-top: 0 !important; font-weight: 700 !important; }
     .swal2-html-container { font-size: 1rem !important; color: var(--text-muted) !important; margin: 1em 1.6em 0.3em !important;}
-    .swal2-confirm { background-color: var(--primary) !important; border-radius: 12px !important; padding: 12px 30px !important; font-weight: 600 !important; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(0,51,160,0.2) !important; }
+    .swal2-confirm { background-color: var(--primary) !important; border-radius: 12px !important; padding: 12px 30px !important; font-weight: 600 !important; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(0,51,160,0.2) !important; border: none !important; }
     .swal2-cancel { border-radius: 12px !important; padding: 12px 30px !important; font-weight: 600 !important; font-size: 1rem !important; }
     .admin-modal-popup { max-width: 95%; }
     .admin-modal-title { text-align: left !important; border-bottom: 2px solid var(--border); padding-bottom: 15px !important; }
 
+    /* Custom Checkbox for Bulk Export */
+    .custom-chk { transform: scale(1.3); cursor: pointer; accent-color: var(--primary); }
   </style>
 </head>
 <body>
@@ -193,6 +194,7 @@
       </div>
     </div>
 
+    <!-- 👁️ 1. VIEW MODE -->
     <div id="viewSection" style="display: none; max-width:600px; margin:0 auto;">
       <div class="card" style="text-align: center;">
         <p style="color:var(--text-muted); font-size:0.9rem; margin:0 0 15px;">
@@ -244,6 +246,7 @@
       </div>
     </div>
 
+    <!-- 👨‍🔧 2. INSPECTOR MODE -->
     <div id="scannerSection" style="display: none; max-width:600px; margin:0 auto;">
       <div class="tab-nav" style="margin-bottom:15px;">
         <button class="tab-btn active" id="btnScanTab" onclick="switchInspectorTab('scan')"><i class="fa-solid fa-camera"></i> สแกน</button>
@@ -280,6 +283,7 @@
       </div>
     </div>
 
+    <!-- 🔐 3. LOGIN SECTION -->
     <div id="loginSection" style="display: none;">
       <div class="card" style="max-width: 450px; margin: 0 auto; text-align:center; padding:30px 20px;">
         <div style="font-size:3rem; color:var(--primary); margin-bottom:10px;"><i class="fa-solid fa-id-badge"></i></div>
@@ -291,6 +295,7 @@
       </div>
     </div>
 
+    <!-- 📝 4. INSPECTION FORM -->
     <div id="formSection" style="display: none; max-width:650px; margin:0 auto;">
       <div class="card" style="background:var(--primary); color:white; border:none; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
         <div>
@@ -318,6 +323,7 @@
       </button>
     </div>
 
+    <!-- 👔 5. ADMIN DASHBOARD -->
     <div id="dashboardSection" style="display: none; max-width:1000px; margin:0 auto;">
       
       <div class="stat-grid" id="dashStatCards">
@@ -329,13 +335,25 @@
 
       <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid var(--border); margin-bottom: 15px; padding-bottom:5px;">
         <div class="filter-tabs" id="dashBuildingFilters" style="border:none; margin:0;"></div>
-        <button class="btn btn-primary" style="width:auto; font-size:0.85rem; padding:8px 15px; border-radius:8px; margin-bottom:5px;" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Export .xlsx</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <!-- 📥 เพิ่มปุ่ม Export PDF แบบรวมตรงนี้ -->
+          <button class="btn" style="width:auto; font-size:0.85rem; padding:8px 15px; border-radius:8px; margin-bottom:5px; background:var(--danger); color:white; border:none;" onclick="exportBulkPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+          <button class="btn btn-primary" style="width:auto; font-size:0.85rem; padding:8px 15px; border-radius:8px; margin-bottom:5px;" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Export .xlsx</button>
+        </div>
       </div>
 
+      <!-- Master List (Table) พร้อมระบบ Checkbox เลือกถัง -->
       <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; background:var(--surface); box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
         <table class="data-table" style="margin:0; border:none;">
-          <thead><tr><th>รหัสถัง</th><th>อาคาร (ชั้น)</th><th class="center-col">สถานะ</th></tr></thead>
-          <tbody id="allAssetsBody"><tr><td colspan="3" class="center-col">กำลังดึงข้อมูล...</td></tr></tbody>
+          <thead>
+            <tr>
+              <th style="width:40px; text-align:center;"><input type="checkbox" id="checkAll" class="custom-chk" onchange="toggleAllCheckboxes(this)"></th>
+              <th>รหัสถัง</th>
+              <th>อาคาร (ชั้น)</th>
+              <th class="center-col">สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="allAssetsBody"><tr><td colspan="4" class="center-col">กำลังดึงข้อมูล...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -364,7 +382,6 @@
     let dashboardDataCache = []; let dashBuildingsCache = [];
     let currentDashStatus = 'ALL'; let currentDashBuilding = 'ALL';
 
-    // Helper Function สำหรับใส่ Text อย่างปลอดภัย (แก้บัค innerText Error เด็ดขาด)
     const setTxt = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; }
     const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; }
 
@@ -395,9 +412,9 @@
     let menuHidden = false;
     function toggleMenu() {
       menuHidden = !menuHidden;
-      document.getElementById('mainSidebar').classList.toggle('collapsed');
-      document.getElementById('mainBotNav').classList.toggle('collapsed');
-      document.getElementById('hideMenuBtn').classList.toggle('collapsed');
+      const sidebar = document.getElementById('mainSidebar'); if(sidebar) sidebar.classList.toggle('collapsed');
+      const botNav = document.getElementById('mainBotNav'); if(botNav) botNav.classList.toggle('collapsed');
+      const btnHide = document.getElementById('hideMenuBtn'); if(btnHide) btnHide.classList.toggle('collapsed');
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -723,8 +740,9 @@
       }).catch(err => Swal.fire({title: 'ปฏิเสธการเข้าถึง', text: err.message, icon: 'error', allowOutsideClick: false}));
     }
 
+    // --- 👔 Admin Dashboard & Modal ---
     function loadDashboardData() {
-      setHtml('allAssetsBody', '<tr><td colspan="3" class="center-col"><i class="fa-solid fa-spinner fa-spin"></i> ดึงข้อมูล...</td></tr>');
+      setHtml('allAssetsBody', '<tr><td colspan="4" class="center-col"><i class="fa-solid fa-spinner fa-spin"></i> ดึงข้อมูล...</td></tr>');
       
       apiRequest('getFullDashboardData', {}).then(data => {
         dashboardDataCache = data.allAssets; dashBuildingsCache = data.buildings;
@@ -751,6 +769,12 @@
         updateDashboardView();
     }
 
+    // ฟังก์ชันจัดการ Checkbox เลือกทั้งหมด
+    function toggleAllCheckboxes(source) {
+      const checkboxes = document.querySelectorAll('.row-chk');
+      checkboxes.forEach(chk => { chk.checked = source.checked; });
+    }
+
     function updateDashboardView() {
         let filtered = dashboardDataCache;
         if(currentDashBuilding !== 'ALL') filtered = filtered.filter(a => a.building === currentDashBuilding);
@@ -761,6 +785,10 @@
 
         if(currentDashStatus !== 'ALL') filtered = filtered.filter(a => a.status === currentDashStatus);
 
+        // รีเซ็ตปุ่มเลือกทั้งหมด
+        const checkAll = document.getElementById('checkAll');
+        if(checkAll) checkAll.checked = false;
+
         let html = "";
         filtered.forEach(item => {
           let badge = "<div class='status-badge badge-pending'>⚪ รอตรวจ</div>"; 
@@ -768,12 +796,13 @@
           if(item.status === "FAIL") badge = "<div class='status-badge badge-fail'>🔴 ชำรุด</div>";
           
           html += `<tr class="master-row" onclick="loadAdminModal('${item.id}')">
+                     <td class="center-col" onclick="event.stopPropagation();"><input type="checkbox" class="custom-chk row-chk" value="${item.id}"></td>
                      <td style="color:var(--primary); font-weight:600;">${item.id}</td>
                      <td>${item.building} <br><span style="font-size:0.75rem; color:var(--text-muted);">ชั้น ${item.floor}</span></td>
                      <td class="center-col">${badge}</td>
                    </tr>`;
         });
-        setHtml('allAssetsBody', html || '<tr><td colspan="3" class="center-col">ไม่มีข้อมูล</td></tr>');
+        setHtml('allAssetsBody', html || '<tr><td colspan="4" class="center-col">ไม่มีข้อมูล</td></tr>');
     }
 
     function loadAdminModal(assetId) {
@@ -804,12 +833,74 @@
               tableHtml += `<tr style="${rowStyle}"><td style="font-size:0.85rem;">${log.monthName}</td><td style="font-size:0.85rem;">${log.date}</td><td class="center-col">${badge}</td><td style="font-size:0.75rem;">${log.inspector}</td></tr>`;
             });
             tableHtml += `</tbody></table></div>`;
-            tableHtml += `<button class="btn btn-primary" style="margin-top:20px; width:100%; border-radius:10px;" onclick="Swal.close()">ปิดหน้าต่าง</button>`;
+            
+            tableHtml += `
+              <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-outline" style="flex:1; border-radius:10px;" onclick="generateSinglePDF('${assetId}')"><i class="fa-solid fa-file-pdf"></i> สร้างรายงาน (PDF)</button>
+                <button class="btn btn-primary" style="flex:1; border-radius:10px;" onclick="Swal.close()">ปิดหน้าต่าง</button>
+              </div>`;
 
             Swal.update({ html: tableHtml });
         }).catch(err => {
             Swal.update({ html: `<div style="color:var(--danger); margin:20px 0;"><i class="fa-solid fa-triangle-exclamation"></i> ${err.message}</div>` });
         });
+    }
+
+    // 🚀 ระบบ Export PDF เดี่ยว (จากใน Modal)
+    function generateSinglePDF(assetId) {
+      Swal.fire({ 
+        title: 'กำลังสร้างเอกสาร PDF...', 
+        html: `ระบบกำลังดึงรูปภาพและสร้างรายงานสำหรับ <b>${assetId}</b><br>โปรดรอสักครู่ (ประมาณ 5-10 วินาที)<br><br><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i>`,
+        showConfirmButton: false, 
+        allowOutsideClick: false 
+      });
+      
+      apiRequest('generatePDF', { assetId: assetId }).then(pdfUrl => {
+        Swal.fire({
+          icon: 'success', title: 'สร้าง PDF สำเร็จ!',
+          html: `<a href="${pdfUrl}" target="_blank" class="btn btn-primary" style="text-decoration:none; display:inline-block; margin-top:15px; border-radius:10px; padding:15px;"><i class="fa-solid fa-download"></i> คลิกเปิด / ดาวน์โหลด</a>`,
+          showConfirmButton: true, confirmButtonText: 'เสร็จสิ้น', allowOutsideClick: false
+        });
+      }).catch(err => {
+        Swal.fire({icon: 'error', title: 'ผิดพลาด', text: err.message, allowOutsideClick: false});
+      });
+    }
+
+    // 🚀 ระบบ Bulk Export PDF (วนลูปสร้างไฟล์ทีละตัว ป้องกันระบบค้าง)
+    async function exportBulkPDF() {
+      const chks = document.querySelectorAll('.row-chk:checked');
+      if(chks.length === 0) return Swal.fire('ไม่ได้เลือกข้อมูล', 'กรุณาติ๊กช่องสี่เหลี่ยมด้านหน้าถัง ที่ต้องการ Export อย่างน้อย 1 รายการ', 'warning');
+      
+      const ids = Array.from(chks).map(c => c.value);
+      
+      Swal.fire({
+        title: 'กำลังสร้าง PDF (Bulk Mode)...',
+        html: `ระบบกำลังทยอยสร้างเอกสาร <b id="pdf-progress" style="color:var(--primary); font-size:1.2rem;">0 / ${ids.length}</b> รายการ<br><span style="font-size:0.8rem; color:var(--text-muted);">(กรุณาอย่าเพิ่งปิดหน้าต่างนี้)</span><br><br><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i>`,
+        allowOutsideClick: false,
+        showConfirmButton: false
+      });
+      
+      let successCount = 0; let failCount = 0;
+      
+      for(let i = 0; i < ids.length; i++) {
+        try {
+          await apiRequest('generatePDF', { assetId: ids[i] });
+          successCount++;
+        } catch(e) {
+          failCount++;
+          console.error("Error generating " + ids[i], e);
+        }
+        const progEl = document.getElementById('pdf-progress');
+        if(progEl) progEl.innerText = `${i+1} / ${ids.length}`;
+      }
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'สร้าง PDF ทั้งหมดเสร็จสิ้น!',
+        html: `สำเร็จ: <b>${successCount}</b> รายการ<br>ล้มเหลว: <b style="color:var(--danger);">${failCount}</b> รายการ<br><br><span style="font-size:0.85rem; color:var(--text-muted);">คุณสามารถเข้าไปดูไฟล์ทั้งหมดได้ที่ Google Drive<br>ในโฟลเดอร์ <b>NTL_Safety_PDF_Reports</b></span>`,
+        confirmButtonText: 'ตกลงรับทราบ',
+        allowOutsideClick: false
+      });
     }
 
     function exportExcel() {
