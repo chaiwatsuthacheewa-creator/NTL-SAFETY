@@ -8,148 +8,135 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
   <style>
+    /* 🎨 5 Themes System */
     :root { --primary: #0033a0; --primary-hover: #002277; --bg: #f1f5f9; --surface: #ffffff; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; }
     body.theme-dark { --primary: #38bdf8; --primary-hover: #0284c7; --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; }
-    body.theme-emerald { --primary: #059669; --primary-hover: #047857; --bg: #f0fdf4; --surface: #ffffff; --text: #064e3b; --text-muted: #34d399; --border: #bbf7d0; }
-    body.theme-sunset { --primary: #ea580c; --primary-hover: #c2410c; --bg: #fff7ed; --surface: #ffffff; --text: #431407; --text-muted: #fb923c; --border: #fed7aa; }
+    body.theme-green { --primary: #059669; --primary-hover: #047857; --bg: #f0fdf4; --surface: #ffffff; --text: #064e3b; --text-muted: #34d399; --border: #bbf7d0; }
+    body.theme-pink { --primary: #db2777; --primary-hover: #be185d; --bg: #fdf2f8; --surface: #ffffff; --text: #831843; --text-muted: #f472b6; --border: #fbcfe8; }
+    body.theme-red { --primary: #dc2626; --primary-hover: #b91c1c; --bg: #fef2f2; --surface: #ffffff; --text: #7f1d1d; --text-muted: #f87171; --border: #fecaca; }
     body.theme-purple { --primary: #7c3aed; --primary-hover: #6d28d9; --bg: #f5f3ff; --surface: #ffffff; --text: #2e1065; --text-muted: #a78bfa; --border: #ddd6fe; }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-    body { font-family: 'Prompt', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
+    
+    /* เว้นขอบจอนิดนึงให้เห็นไฟวิ่ง */
+    body { font-family: 'Prompt', sans-serif; background: #000; color: var(--text); margin: 0; padding: 4px; display: flex; height: 100vh; overflow: hidden; }
 
-    .app-container { display: flex; width: 100%; height: 100%; }
-    .sidebar { display: none; width: 260px; background: var(--surface); border-right: 1px solid var(--border); flex-direction: column; padding: 25px 0; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.02);}
-    .sidebar-logo { text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 30px; letter-spacing: 1px;}
+    /* ⚡ Futuristic Edge Glow */
+    .glow-wrapper { position: relative; width: 100%; height: 100%; border-radius: 24px; padding: 3px; background: linear-gradient(45deg, var(--primary), var(--success), var(--danger), var(--primary)); background-size: 400%; animation: edge-glow 5s linear infinite; display: flex;}
+    @keyframes edge-glow { 0% { background-position: 0 0; } 50% { background-position: 400% 0; } 100% { background-position: 0 0; } }
+    
+    .app-container { background: var(--surface); border-radius: 20px; display: flex; width: 100%; height: 100%; position: relative; z-index: 1; overflow: hidden;}
+    
+    .sidebar { display: none; width: 260px; background: var(--surface); border-right: 1px solid var(--border); flex-direction: column; padding: 25px 0; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.02); transition: 0.3s;}
+    .sidebar.collapsed { width: 0; padding: 0; overflow: hidden; opacity: 0; }
+    .sidebar-logo { text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 30px; }
     .sidebar-menu { display: flex; flex-direction: column; gap: 8px; padding: 0 15px; }
     .sidebar-btn { padding: 14px 20px; border-radius: 12px; border: none; background: transparent; color: var(--text-muted); font-family: inherit; font-weight: 500; font-size: 0.95rem; text-align: left; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px;}
     .sidebar-btn:hover { background: var(--bg); color: var(--primary); }
     .sidebar-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    .sidebar-btn i { font-size: 1.2rem; width: 25px; text-align: center; }
-
+    
     .main-content { flex: 1; height: 100%; overflow-y: auto; padding: 20px 20px 90px 20px; position: relative; }
     
-    .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface); justify-content: space-around; padding: 12px 0 20px; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 1000; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0;}
+    .bottom-nav { display: flex; position: absolute; bottom: 0; left: 0; width: 100%; background: var(--surface); justify-content: space-around; padding: 12px 0 20px; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 1000; border-top: 1px solid var(--border); transition: transform 0.3s;}
+    .bottom-nav.collapsed { transform: translateY(100%); }
     .bottom-nav-btn { background: none; border: none; color: var(--text-muted); font-family: inherit; font-size: 0.75rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; flex: 1;}
-    .bottom-nav-btn i { font-size: 1.4rem; margin-bottom: 5px; }
     .bottom-nav-btn.active { color: var(--primary); }
-    .bottom-nav-btn.active i { transform: translateY(-3px) scale(1.1); }
+
+    .hide-menu-btn { position: absolute; bottom: 85px; right: 20px; background: var(--primary); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; z-index: 1001; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s;}
+    .hide-menu-btn.collapsed { bottom: 20px; transform: rotate(180deg); }
 
     @media (min-width: 768px) {
-      .sidebar { display: flex; }
-      .bottom-nav { display: none; }
-      .main-content { padding: 30px 40px; }
+      .sidebar { display: flex; } .bottom-nav { display: none !important; } .main-content { padding: 30px 40px; }
+      .hide-menu-btn { bottom: 20px; right: auto; left: 270px; transform: rotate(90deg); }
+      .hide-menu-btn.collapsed { left: 20px; transform: rotate(-90deg); }
     }
 
-    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .connection-status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; margin-top: 5px; border: 1px solid transparent; transition: 0.3s;}
+
+    .header-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
+    .header-title-area { display: flex; flex-direction: column; align-items: flex-start;}
     .page-title { font-size: 1.5rem; font-weight: 700; margin: 0; color: var(--text); }
     
     .card { background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border); margin-bottom: 20px; }
     .btn { padding: 12px 20px; border: none; border-radius: 10px; font-family: inherit; font-weight: 600; font-size: 1rem; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
-    .btn:active { transform: scale(0.97); }
     .btn-primary { background: var(--primary); color: white; width: 100%;}
-    .btn-primary:hover { background: var(--primary-hover); }
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); width: 100%;}
     input.form-control { width: 100%; padding: 15px; border: 2px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 1rem; margin-bottom: 15px; outline: none; background: var(--bg); color: var(--text);}
-    input.form-control:focus { border-color: var(--primary); }
 
-    #reader { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 2px solid var(--border); background: var(--surface);}
+    /* 🔭 Sci-Fi Scanner UI */
+    .scanner-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 3px solid var(--primary); box-shadow: 0 0 20px rgba(0, 51, 160, 0.3); background: #000; }
+    #reader { width: 100%; }
     #reader video { object-fit: cover; }
-    #reader img { display: none; }
+    .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: rgba(56, 189, 248, 0.8); box-shadow: 0 0 15px rgba(56, 189, 248, 1); animation: scan 2s infinite linear; z-index: 10; pointer-events: none;}
+    @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .stat-box { background: var(--surface); padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-    .stat-box h2 { margin: 0 0 5px; font-size: 2rem; }
-    .stat-box p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
-    
-    .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none;}
-    .filter-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-family: inherit; font-weight:500;}
-    .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .photo-box { background: var(--bg); border: 2px dashed var(--primary); border-radius: 12px; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: 0.2s;}
+    .photo-box:hover { background: rgba(0,51,160,0.05); }
+    .photo-box img { position: absolute; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1;}
+    .photo-del { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.9); color: var(--danger); border-radius: 50%; width: 28px; height: 28px; display: none; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
-    .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-    .asset-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: space-between;}
-    .asset-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-    .asset-badge { display: inline-block; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; margin-top: 15px; text-align: center;}
-    .badge-pass { background: rgba(16,185,129,0.1); color: var(--success); }
-    .badge-fail { background: rgba(239,68,68,0.1); color: var(--danger); }
-    .badge-pending { background: rgba(100,116,139,0.1); color: var(--text-muted); }
+    .tab-nav { display: flex; background: var(--bg); border-radius: 12px; padding: 5px; margin-bottom: 20px; border: 1px solid var(--border); }
+    .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: inherit; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); background: transparent; border: none; border-radius: 8px; cursor: pointer; }
+    .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .yearly-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: var(--surface); color: var(--text); font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .yearly-table th, .yearly-table td { border: 1px solid var(--border); padding: 10px 5px; text-align: center; }
+    .yearly-table th { background: rgba(0, 51, 160, 0.05); color: var(--primary); font-weight: 600; }
 
     .theme-selector { position: absolute; top: 70px; right: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: none; z-index: 2000; flex-direction: column; gap: 5px; min-width: 180px;}
     .theme-option { display: flex; align-items: center; gap: 12px; padding: 10px 15px; cursor: pointer; border-radius: 8px; font-size: 0.9rem; color: var(--text); font-weight: 500;}
     .theme-option:hover { background: var(--bg); }
     .color-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);}
-
-    .tab-nav { display: flex; background: var(--bg); border-radius: 12px; padding: 5px; margin-bottom: 20px; border: 1px solid var(--border); }
-    .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: inherit; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); background: transparent; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-    .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .yearly-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: var(--surface); color: var(--text); font-size: 0.85rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .yearly-table th, .yearly-table td { border: 1px solid var(--border); padding: 10px 5px; text-align: center; vertical-align: middle; }
-    .yearly-table th { background: rgba(0, 51, 160, 0.05); color: var(--primary); font-weight: 600; }
-    .dark-mode .yearly-table th { background: rgba(56, 189, 248, 0.1); }
-
-    .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .photo-box { background: var(--bg); border: 2px dashed var(--border); border-radius: 12px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
-    .photo-box img { position: absolute; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1;}
-    .photo-del { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.9); color: var(--danger); border-radius: 50%; width: 28px; height: 28px; display: none; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-    .checklist-container { border: 1px solid var(--border); border-radius: 12px; padding: 5px 20px; margin-top: 10px; background: var(--surface);}
-    .checklist-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); font-size:0.9rem;}
-    .checklist-item:last-child { border-bottom: none; }
-    .switch { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger); border-radius: 34px; transition: .4s; }
-    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s;}
-    input:checked + .slider { background-color: var(--success); }
-    input:checked + .slider:before { transform: translateX(22px); }
+    
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-box { background: var(--surface); padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+    .stat-box h2 { margin: 0 0 5px; font-size: 2rem; }
+    .stat-box p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
   </style>
 </head>
 <body>
 
+<div class="glow-wrapper">
 <div class="app-container">
   
-  <div class="sidebar">
+  <div class="sidebar" id="mainSidebar">
     <div class="sidebar-logo"><i class="fa-solid fa-shield-halved"></i> NTL SAFETY</div>
     <div class="sidebar-menu">
-      <button class="sidebar-btn active" id="sideNavScan" onclick="navTo('scanner')"><i class="fa-solid fa-qrcode"></i> เปิดกล้องสแกน</button>
-      <button class="sidebar-btn" id="sideNavDash" onclick="navTo('dashboard')"><i class="fa-solid fa-chart-pie"></i> แดชบอร์ดสรุปผล</button>
-      <button class="sidebar-btn" id="sideNavAuth" onclick="toggleAuth()"><i class="fa-solid fa-circle-user"></i> <span id="txtSideAuth">เข้าสู่ระบบ</span></button>
+      <button class="sidebar-btn" id="sideNavView" onclick="navTo('view')"><i class="fa-solid fa-eye"></i> โหมด View</button>
+      <button class="sidebar-btn" id="sideNavScan" onclick="navTo('scanner')"><i class="fa-solid fa-qrcode"></i> โหมด Inspector</button>
+      <button class="sidebar-btn" id="sideNavDash" onclick="navTo('dashboard')"><i class="fa-solid fa-chart-pie"></i> โหมด Admin</button>
+      <button class="sidebar-btn" id="sideNavAuth" onclick="toggleAuth()"><i class="fa-solid fa-circle-user"></i> <span id="txtSideAuth">ล็อกอินช่าง</span></button>
     </div>
   </div>
+
+  <button class="hide-menu-btn" id="hideMenuBtn" onclick="toggleMenu()"><i class="fa-solid fa-chevron-down"></i></button>
 
   <div class="main-content">
     
     <div class="header-bar">
-      <h2 class="page-title" id="topPageTitle">NTL Scanner</h2>
-      <button class="btn btn-outline" style="width:auto; padding:10px 14px; border-radius:50%;" onclick="toggleThemePicker()"><i class="fa-solid fa-palette"></i></button>
+      <div class="header-title-area">
+        <h2 class="page-title" id="topPageTitle">NTL System</h2>
+        <div id="connBadge" class="connection-status"></div>
+      </div>
+      <div>
+        <button class="btn btn-outline" style="width:auto; padding:10px 14px; border-radius:50%; margin-right:5px;" onclick="location.href='https://www.google.com'"><i class="fa-solid fa-house"></i></button>
+        <button class="btn btn-outline" style="width:auto; padding:10px 14px; border-radius:50%;" onclick="toggleThemePicker()"><i class="fa-solid fa-palette"></i></button>
+      </div>
       
       <div class="theme-selector" id="themePicker">
-        <div class="theme-option" onclick="setTheme('default')"><div class="color-circle" style="background:#0033a0;"></div> NTL Blue</div>
-        <div class="theme-option" onclick="setTheme('dark')"><div class="color-circle" style="background:#0f172a;"></div> Dark Mode</div>
-        <div class="theme-option" onclick="setTheme('emerald')"><div class="color-circle" style="background:#059669;"></div> Emerald Green</div>
-        <div class="theme-option" onclick="setTheme('sunset')"><div class="color-circle" style="background:#ea580c;"></div> Sunset Orange</div>
-        <div class="theme-option" onclick="setTheme('purple')"><div class="color-circle" style="background:#7c3aed;"></div> Midnight Purple</div>
+        <div class="theme-option" onclick="setTheme('default')"><div class="color-circle" style="background:#0033a0;"></div> น้ำเงิน (Blue)</div>
+        <div class="theme-option" onclick="setTheme('green')"><div class="color-circle" style="background:#059669;"></div> เขียว (Green)</div>
+        <div class="theme-option" onclick="setTheme('pink')"><div class="color-circle" style="background:#db2777;"></div> ชมพู (Pink)</div>
+        <div class="theme-option" onclick="setTheme('red')"><div class="color-circle" style="background:#dc2626;"></div> แดง (Red)</div>
+        <div class="theme-option" onclick="setTheme('purple')"><div class="color-circle" style="background:#7c3aed;"></div> ม่วง (Purple)</div>
+        <div style="border-top:1px solid var(--border); margin:5px 0;"></div>
+        <div class="theme-option" onclick="setTheme('dark')"><i class="fa-solid fa-moon"></i> โหมดกลางคืน (Dark)</div>
       </div>
     </div>
 
-    <!-- 1. SCANNER MODE -->
-    <div id="scannerSection" style="text-align: center; max-width:600px; margin:0 auto;">
-      <div class="card" style="padding: 10px;">
-        <div id="reader"></div>
-        <p style="margin-top:15px; color:var(--text-muted); font-size:0.9rem;">
-          <i class="fa-solid fa-camera"></i> นำกล้องส่องที่ QR Code เพื่อดึงข้อมูลอุปกรณ์
-        </p>
-      </div>
-      
-      <div class="card">
-        <p style="margin:0 0 10px; font-weight:600; text-align:left;">หรือระบุรหัสด้วยตนเอง:</p>
-        <div style="display:flex; gap:10px;">
-          <input type="text" class="form-control" id="manualAssetId" placeholder="เช่น NTL-FE-ARI-001" style="margin:0;">
-          <button class="btn btn-primary" style="width:auto; padding:0 20px;" onclick="loadAssetData(document.getElementById('manualAssetId').value)"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. VIEW MODE (ไม่มีรูปภาพ) -->
     <div id="viewSection" style="display: none; max-width:600px; margin:0 auto;">
       <div class="card" style="text-align: center;">
         <p style="color:var(--text-muted); font-size:0.9rem; margin:0 0 15px;">
@@ -158,13 +145,13 @@
         </p>
 
         <div class="tab-nav">
-          <button class="tab-btn active" id="btnTabCurrent" onclick="switchViewTab('current')"><i class="fa-solid fa-bolt"></i> เดือนนี้</button>
-          <button class="tab-btn" id="btnTabYearly" onclick="switchViewTab('yearly')"><i class="fa-solid fa-calendar-days"></i> รายปี</button>
+          <button class="tab-btn active" id="btnTabCurrent" onclick="switchViewTab('current')">เดือนนี้</button>
+          <button class="tab-btn" id="btnTabYearly" onclick="switchViewTab('yearly')">ประวัติรายปี</button>
         </div>
 
         <div id="tabCurrent">
           <div style="text-align: left; background:var(--bg); padding:15px; border-radius:12px; border:1px solid var(--border);">
-            <h4 style="margin:0 0 15px; color:var(--text); border-bottom: 1px solid var(--border); padding-bottom: 10px; text-align:center;">ประจำเดือน: <span id="vMonth">-</span></h4>
+            <h4 style="margin:0 0 15px; color:var(--text); text-align:center;">ประจำเดือน: <span id="vMonth">-</span></h4>
             <div style="text-align: center; margin-bottom:15px;" id="vStatus"></div>
             <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.9rem;">
               <span style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> ล่าสุด</span><strong style="color:var(--text);" id="vDate">-</strong>
@@ -183,27 +170,66 @@
           <h3 style="margin:0 0 10px; color:var(--text); text-align:left; font-size:1rem;">ประวัติปี <span id="vYear" style="color:var(--primary);">...</span></h3>
           <table class="yearly-table">
             <thead><tr><th width="20%">ด/ป</th><th width="30%">วันที่</th><th width="20%">สถานะ</th><th width="30%">ผู้ตรวจ</th></tr></thead>
-            <tbody id="yearlyTableBody"><tr><td colspan="4">กำลังโหลด...</td></tr></tbody>
+            <tbody id="yearlyTableBody"><tr><td colspan="4">สแกนเพื่อดูข้อมูล...</td></tr></tbody>
           </table>
         </div>
-        
-        <button class="btn btn-primary" onclick="navTo('login')" style="margin-top:20px;" id="btnInspectNow"><i class="fa-solid fa-pen-to-square"></i> เข้าสู่ระบบเพื่อบันทึกผล</button>
+      </div>
+      
+      <div class="card" style="text-align:center;">
+        <p style="margin:0 0 10px; font-weight:600; text-align:left;">ค้นหาอุปกรณ์ (View Mode):</p>
+        <div style="display:flex; gap:10px;">
+          <input type="text" class="form-control" id="viewSearchId" placeholder="รหัสอุปกรณ์..." style="margin:0;">
+          <button class="btn btn-primary" style="width:auto; padding:0 20px;" onclick="loadAssetData(document.getElementById('viewSearchId').value, 'view')"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
       </div>
     </div>
 
-    <!-- 3. LOGIN SECTION -->
+    <div id="scannerSection" style="display: none; max-width:600px; margin:0 auto;">
+      
+      <div class="tab-nav" style="margin-bottom:15px;">
+        <button class="tab-btn active" id="btnScanTab" onclick="switchInspectorTab('scan')"><i class="fa-solid fa-camera"></i> สแกน</button>
+        <button class="tab-btn" id="btnHistoryTab" onclick="switchInspectorTab('history')"><i class="fa-solid fa-list-check"></i> ผลงานของฉัน</button>
+      </div>
+
+      <div id="inspectorScanTab">
+        <div class="card" style="padding: 10px; position:relative;">
+          <div class="scanner-container">
+            <div class="scan-line"></div>
+            <div id="reader"></div>
+          </div>
+          <p style="margin-top:15px; color:var(--text-muted); font-size:0.9rem; text-align:center;">
+            <i class="fa-solid fa-qrcode"></i> เล็งกล้องไปที่ QR Code เพื่อดึงฟอร์ม
+          </p>
+        </div>
+      </div>
+
+      <div id="inspectorHistoryTab" style="display:none;">
+        <div class="card">
+          <h4 style="margin:0 0 15px; color:var(--primary);"><i class="fa-solid fa-clipboard-user"></i> ผลงานเดือนนี้ของคุณ</h4>
+          <div style="display:flex; justify-content:space-around; text-align:center; margin-bottom:15px;">
+             <div><h2 style="margin:0; color:var(--primary);" id="myTotal">0</h2><span style="font-size:0.8rem;">ตรวจแล้ว</span></div>
+             <div><h2 style="margin:0; color:var(--success);" id="myPass">0</h2><span style="font-size:0.8rem;">ปกติ</span></div>
+             <div><h2 style="margin:0; color:var(--danger);" id="myFail">0</h2><span style="font-size:0.8rem;">ชำรุด</span></div>
+          </div>
+          <table class="yearly-table">
+            <thead><tr><th>เวลา</th><th>รหัสถัง</th><th>ผล</th></tr></thead>
+            <tbody id="myHistoryList"><tr><td colspan="3">กำลังโหลด...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div id="loginSection" style="display: none;">
       <div class="card" style="max-width: 450px; margin: 0 auto; text-align:center; padding:30px 20px;">
-        <div style="font-size:3rem; color:var(--primary); margin-bottom:10px;"><i class="fa-solid fa-user-shield"></i></div>
-        <h3 style="color:var(--text); margin-top:0;">ยืนยันตัวตนเจ้าหน้าที่</h3>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:25px;">ล็อกอินครั้งเดียว สแกนตรวจต่อเนื่องได้ทันที</p>
-        <input type="text" class="form-control" id="usernameInput" placeholder="Username (ชื่อผู้ใช้งาน)">
-        <input type="password" class="form-control" id="passwordInput" placeholder="Password (รหัสผ่าน)">
-        <button class="btn btn-primary" onclick="handleLogin()" style="padding:15px; font-size:1.1rem;"><i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ</button>
+        <div style="font-size:3rem; color:var(--primary); margin-bottom:10px;"><i class="fa-solid fa-id-badge"></i></div>
+        <h3 style="color:var(--text); margin-top:0;">เข้าสู่ระบบ</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:25px;">กรุณายืนยันตัวตนเพื่อเข้าถึงระบบ</p>
+        <input type="text" class="form-control" id="usernameInput" placeholder="Username">
+        <input type="password" class="form-control" id="passwordInput" placeholder="Password">
+        <button class="btn btn-primary" onclick="handleLogin()" style="padding:15px; font-size:1.1rem;"><i class="fa-solid fa-right-to-bracket"></i> ล็อกอิน</button>
       </div>
     </div>
 
-    <!-- 4. INSPECTION FORM -->
     <div id="formSection" style="display: none; max-width:650px; margin:0 auto;">
       <div class="card" style="background:var(--primary); color:white; border:none; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
         <div>
@@ -220,51 +246,46 @@
         <strong id="displayInspector" style="color:var(--primary);"></strong>
       </div>
 
-      <label style="font-weight:600; font-size:0.9rem; margin-left:5px;">ภาพถ่ายหลักฐาน (บังคับ 2 รูปขึ้นไป)</label>
+      <label style="font-weight:600; font-size:0.9rem; margin-left:5px;">อัปโหลดรูปหลักฐาน (2 รูปขึ้นไป)</label>
       <div class="photo-grid" id="photoArea" style="margin-bottom: 25px;"></div>
 
-      <label style="font-weight:600; font-size:0.9rem; margin-left:5px;">เช็คลิสต์ 5 ข้อสำคัญ</label>
+      <label style="font-weight:600; font-size:0.9rem; margin-left:5px;">รายการตรวจสอบ (ดึงจาก Sheet)</label>
       <div class="checklist-container" id="checklistArea" style="margin-bottom: 25px;"></div>
 
       <button class="btn btn-primary" id="submitBtn" onclick="submitInspection()" style="font-size:1.1rem; padding:16px; box-shadow:0 4px 15px rgba(0,51,160,0.2);">
-        <i class="fa-solid fa-cloud-arrow-up"></i> บันทึกผล & สแกนถังถัดไป
+        <i class="fa-solid fa-cloud-arrow-up"></i> บันทึก & สแกนถังถัดไป
       </button>
     </div>
 
-    <!-- 5. DASHBOARD -->
     <div id="dashboardSection" style="display: none;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-        <h3 style="margin:0; color:var(--text); font-size:1.2rem;"><i class="fa-solid fa-chart-line"></i> สรุปภาพรวมเดือนนี้</h3>
-        <button class="btn btn-outline" style="width:auto; font-size:0.85rem; padding:8px 15px;" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+        <h3 style="margin:0; color:var(--text); font-size:1.2rem;"><i class="fa-solid fa-chart-line"></i> Command Center</h3>
+        <button class="btn btn-primary" style="width:auto; font-size:0.85rem; padding:8px 15px;" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Export .xlsx</button>
       </div>
 
-      <div class="stat-grid">
-        <div class="stat-box" style="border-top: 4px solid var(--primary);"><h2 id="dashTotal" style="color:var(--primary);">0</h2><p>ทั้งหมด</p></div>
-        <div class="stat-box" style="border-top: 4px solid var(--success);"><h2 id="dashPass" style="color:var(--success);">0</h2><p>ปกติ</p></div>
-        <div class="stat-box" style="border-top: 4px solid var(--danger);"><h2 id="dashFail" style="color:var(--danger);">0</h2><p>ชำรุด</p></div>
-        <div class="stat-box" style="border-top: 4px solid var(--text-muted);"><h2 id="dashPending" style="color:var(--text-muted);">0</h2><p>รอตรวจ</p></div>
+      <div class="stat-grid" style="display:flex; gap:15px; margin-bottom:20px; overflow-x:auto;">
+        <div class="stat-box" style="border-top: 4px solid var(--primary); min-width:120px; flex:1;"><h2 id="dashTotal" style="color:var(--primary);">0</h2><p>ทั้งหมด</p></div>
+        <div class="stat-box" style="border-top: 4px solid var(--success); min-width:120px; flex:1;"><h2 id="dashPass" style="color:var(--success);">0</h2><p>ปกติ</p></div>
+        <div class="stat-box" style="border-top: 4px solid var(--danger); min-width:120px; flex:1;"><h2 id="dashFail" style="color:var(--danger);">0</h2><p>ชำรุด</p></div>
+        <div class="stat-box" style="border-top: 4px solid var(--text-muted); min-width:120px; flex:1;"><h2 id="dashPending" style="color:var(--text-muted);">0</h2><p>รอตรวจ</p></div>
       </div>
 
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterCards('ALL', this)">ทั้งหมด</button>
-        <button class="filter-btn" onclick="filterCards('PASS', this)">🟢 ปกติ</button>
-        <button class="filter-btn" onclick="filterCards('FAIL', this)">🔴 ชำรุด</button>
-        <button class="filter-btn" onclick="filterCards('PENDING', this)">⚪ ยังไม่ตรวจ</button>
-      </div>
-
-      <div class="asset-grid" id="assetCardContainer">
-        <div style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--text-muted);">
-          <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br><br>กำลังดึงข้อมูล...
-        </div>
+      <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+        <table class="yearly-table" style="margin:0; border:none;">
+          <thead><tr><th>รหัสถัง</th><th>ชั้น</th><th>สถานะ</th></tr></thead>
+          <tbody id="allAssetsBody"><tr><td colspan="3">กำลังดึงข้อมูล...</td></tr></tbody>
+        </table>
       </div>
     </div>
 
   </div>
 </div>
+</div> 
 
-<div class="bottom-nav">
-  <button class="bottom-nav-btn active" id="botNavScan" onclick="navTo('scanner')"><i class="fa-solid fa-qrcode"></i><span>สแกน</span></button>
-  <button class="bottom-nav-btn" id="botNavDash" onclick="navTo('dashboard')"><i class="fa-solid fa-chart-pie"></i><span>แดชบอร์ด</span></button>
+<div class="bottom-nav" id="mainBotNav">
+  <button class="bottom-nav-btn active" id="botNavView" onclick="navTo('view')"><i class="fa-solid fa-eye"></i><span>View</span></button>
+  <button class="bottom-nav-btn" id="botNavScan" onclick="navTo('scanner')"><i class="fa-solid fa-qrcode"></i><span>Inspector</span></button>
+  <button class="bottom-nav-btn" id="botNavDash" onclick="navTo('dashboard')"><i class="fa-solid fa-chart-pie"></i><span>Admin</span></button>
   <button class="bottom-nav-btn" id="botNavAuth" onclick="toggleAuth()"><i class="fa-solid fa-circle-user"></i><span id="txtBotAuth">ล็อกอิน</span></button>
 </div>
   
@@ -274,35 +295,66 @@
     // =================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbzYR-nd2RmHna2MOjEv6YnWHgx24lGr5P8YO0NCCGIdmgT5ck9FlFzLalE0AEhvwbz6/exec";
     
-    let currentUser = null; 
-    let currentAssetForForm = "";
-    let isSubmitting = false; 
-    let photos = [undefined, undefined, undefined, undefined]; 
-    let gpsLocation = "0,0"; 
-    let html5QrcodeScanner = null;
-    let dashboardDataCache = []; 
-    let isCameraRunning = false;
+    let currentUser = null; let currentAssetForForm = ""; let isSubmitting = false; 
+    let photos = [undefined, undefined, undefined, undefined]; let gpsLocation = "0,0"; 
+    let html5QrcodeScanner = null; let dashboardDataCache = []; let isCameraRunning = false;
+    let dynamicChecklistForm = [];
 
+    // --- UI Toggles & Themes ---
     function initTheme() { const savedTheme = localStorage.getItem('ntl_theme') || 'default'; setTheme(savedTheme); }
     function toggleThemePicker() { const picker = document.getElementById('themePicker'); picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex'; }
     function setTheme(themeName) { document.body.className = themeName === 'default' ? '' : `theme-${themeName}`; localStorage.setItem('ntl_theme', themeName); document.getElementById('themePicker').style.display = 'none'; }
+    
+    let menuHidden = false;
+    function toggleMenu() {
+      menuHidden = !menuHidden;
+      document.getElementById('mainSidebar').classList.toggle('collapsed');
+      document.getElementById('mainBotNav').classList.toggle('collapsed');
+      document.getElementById('hideMenuBtn').classList.toggle('collapsed');
+    }
 
+    // --- Initialization ---
     document.addEventListener("DOMContentLoaded", () => {
       initTheme();
+      
+      const badge = document.getElementById('connBadge');
+      
+      // โชว์สถานะกำลังหมุนเช็คระบบ 1 วินาที
+      badge.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังตรวจสอบระบบ...';
+      badge.style.background = 'rgba(100, 116, 139, 0.1)'; 
+      badge.style.color = 'var(--text-muted)'; 
+      badge.style.borderColor = 'var(--border)';
+
+      setTimeout(() => {
+        apiRequest('checkConnection', {})
+          .then(() => {
+            badge.innerHTML = '<i class="fa-solid fa-wifi"></i> ออนไลน์';
+            badge.style.background = 'rgba(16, 185, 129, 0.1)'; 
+            badge.style.color = 'var(--success)'; 
+            badge.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+          })
+          .catch(() => {
+            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ออฟไลน์';
+            badge.style.background = 'rgba(239, 68, 68, 0.1)'; 
+            badge.style.color = 'var(--danger)'; 
+            badge.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+          });
+      }, 1000);
+
       const savedUser = sessionStorage.getItem('ntl_user');
       if (savedUser) { currentUser = JSON.parse(savedUser); updateAuthUI(); }
       
+      if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => gpsLocation = `${pos.coords.latitude},${pos.coords.longitude}`);
+      
       const urlParams = new URLSearchParams(window.location.search);
       const assetFromUrl = urlParams.get('id');
-      
-      if (assetFromUrl) loadAssetData(assetFromUrl.toUpperCase());
-      else navTo('scanner');
-      
-      if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => gpsLocation = `${pos.coords.latitude},${pos.coords.longitude}`);
+      if (assetFromUrl) loadAssetData(assetFromUrl.toUpperCase(), 'view'); 
+      else navTo('view'); 
     });
 
+    // --- Navigation ---
     function showScreen(screenId, title) {
-      ['scannerSection', 'viewSection', 'loginSection', 'formSection', 'dashboardSection'].forEach(id => document.getElementById(id).style.display = 'none');
+      ['viewSection', 'scannerSection', 'loginSection', 'formSection', 'dashboardSection'].forEach(id => document.getElementById(id).style.display = 'none');
       document.getElementById(screenId).style.display = 'block';
       document.getElementById('topPageTitle').innerText = title;
     }
@@ -310,9 +362,14 @@
     function navTo(target) {
       document.querySelectorAll('.sidebar-btn, .bottom-nav-btn').forEach(b => b.classList.remove('active'));
 
-      if (target === 'scanner') {
+      if (target === 'view') {
+        document.getElementById('sideNavView').classList.add('active'); document.getElementById('botNavView').classList.add('active');
+        stopScanner(); showScreen('viewSection', 'โหมดผู้ใช้ทั่วไป (View)');
+      }
+      else if (target === 'scanner') {
         document.getElementById('sideNavScan').classList.add('active'); document.getElementById('botNavScan').classList.add('active');
-        showScreen('scannerSection', 'เปิดกล้องสแกนอุปกรณ์'); initScanner();
+        if(!currentUser) { Swal.fire('ข้อมูลสงวนสิทธิ์', 'กรุณาล็อกอินเจ้าหน้าที่ก่อนเข้าโหมด Inspector', 'info').then(()=> navTo('login')); return;}
+        showScreen('scannerSection', 'โหมดตรวจสอบ (Inspector)'); initScanner();
       } 
       else if (target === 'dashboard') {
         document.getElementById('sideNavDash').classList.add('active'); document.getElementById('botNavDash').classList.add('active');
@@ -320,34 +377,42 @@
         if (currentUser && (currentUser.role === 'Admin' || currentUser.role === 'Viewer')) {
           showScreen('dashboardSection', 'Command Center'); loadDashboardData();
         } else {
-          Swal.fire('สงวนสิทธิ์', 'กรุณาล็อกอินด้วยบัญชี Admin/Viewer', 'warning').then(() => navTo('login'));
+          Swal.fire('สงวนสิทธิ์ Admin', 'กรุณาล็อกอินผู้บริหาร', 'warning').then(() => navTo('login'));
         }
       }
       else if (target === 'login') {
         stopScanner(); showScreen('loginSection', 'เข้าสู่ระบบ');
       }
       else if (target === 'form') {
-        stopScanner(); showScreen('formSection', 'บันทึกผลการตรวจสอบ');
-      }
-      else if (target === 'view') {
-        stopScanner(); showScreen('viewSection', 'ข้อมูลอุปกรณ์');
+        stopScanner(); showScreen('formSection', 'บันทึกผลตรวจสอบ');
       }
     }
 
+    // --- Authentication ---
     function toggleAuth() {
       if (currentUser) {
         Swal.fire({ title: 'ออกจากระบบ?', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'ออก', cancelButtonText: 'ยกเลิก' }).then((r) => { 
-          if(r.isConfirmed){ currentUser=null; sessionStorage.removeItem('ntl_user'); updateAuthUI(); navTo('scanner'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'ออกจากระบบแล้ว', showConfirmButton:false, timer:1500});} 
+          if(r.isConfirmed){ currentUser=null; sessionStorage.removeItem('ntl_user'); updateAuthUI(); navTo('view'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'ออกจากระบบแล้ว', showConfirmButton:false, timer:1500});} 
         });
       } else { navTo('login'); }
     }
 
     function updateAuthUI() {
-      const authTxt = currentUser ? "ออกจากระบบ" : "เข้าสู่ระบบ";
+      const authTxt = currentUser ? "ออกจากระบบ" : "ล็อกอินช่าง";
       const authIcon = currentUser ? '<i class="fa-solid fa-power-off" style="color:var(--danger);"></i>' : '<i class="fa-solid fa-circle-user"></i>';
-      document.getElementById('sideNavAuth').innerHTML = `${authIcon} <span style="color:${currentUser ? 'var(--danger)' : 'inherit'}">${authTxt}</span>`;
-      document.getElementById('botNavAuth').innerHTML = `${authIcon} <span style="color:${currentUser ? 'var(--danger)' : 'inherit'}">${authTxt}</span>`;
-      document.getElementById('txtBotAuth').innerText = authTxt;
+      
+      const sideNav = document.getElementById('sideNavAuth');
+      if (sideNav) sideNav.innerHTML = `${authIcon} <span id="txtSideAuth" style="color:${currentUser ? 'var(--danger)' : 'inherit'}">${authTxt}</span>`;
+      
+      const botNav = document.getElementById('botNavAuth');
+      if (botNav) botNav.innerHTML = `${authIcon} <span id="txtBotAuth" style="color:${currentUser ? 'var(--danger)' : 'inherit'}">${authTxt}</span>`;
+      
+      const titleEl = document.getElementById('topPageTitle');
+      if(currentUser && currentUser.role === 'Inspector' && titleEl) {
+        titleEl.innerText = `สวัสดี, ${currentUser.name}`;
+      } else if (!currentUser && titleEl) {
+        titleEl.innerText = 'NTL System';
+      }
     }
 
     async function apiRequest(action, payload) {
@@ -355,67 +420,7 @@
       const result = await response.json(); if(result.status === 'error') throw new Error(result.message); return result.data;
     }
 
-    function initScanner() {
-      if (isCameraRunning) return;
-      if (!html5QrcodeScanner) html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250}, aspectRatio: 1.0 }, false);
-      html5QrcodeScanner.render(onScanSuccess, (err) => {}); isCameraRunning = true;
-    }
-    function stopScanner() { if (html5QrcodeScanner && isCameraRunning) { html5QrcodeScanner.clear(); isCameraRunning = false; } }
-    function onScanSuccess(decodedText) {
-      stopScanner(); let assetId = decodedText;
-      if (decodedText.includes('?id=')) assetId = new URL(decodedText).searchParams.get('id');
-      loadAssetData(assetId.toUpperCase());
-    }
-
-    // 🚫 อัปเดตฟังก์ชันนี้: ไม่มีการโหลดข้อมูลและแสดงปุ่มรูปภาพแล้ว
-    function loadAssetData(assetId) {
-      if(!assetId || assetId.trim() === "") return Swal.fire('ข้อมูลไม่ถูกต้อง', '', 'warning');
-      Swal.fire({ title: 'กำลังดึงข้อมูล...', didOpen: () => Swal.showLoading() });
-      
-      apiRequest('getAssetData', { assetId: assetId }).then(data => {
-        Swal.close(); currentAssetForForm = assetId;
-
-        document.getElementById('vType').innerText = assetId.includes("EL-") ? "Emergency Light" : "Fire Extinguisher";
-        document.getElementById('vAssetIdView').innerText = assetId; document.getElementById('vBuildingView').innerText = data.building; document.getElementById('vFloorView').innerText = data.floor;
-        document.getElementById('vMonth').innerText = data.currentMonth; document.getElementById('vYear').innerText = data.currentYear;
-        document.getElementById('vDate').innerText = data.lastDate; document.getElementById('vInspector').innerText = data.lastInspector;
-
-        if (data.lastStatus === "FAIL") document.getElementById('vStatus').innerHTML = "<div class='asset-badge badge-fail' style='font-size:1rem; padding:8px 20px;'><i class='fa-solid fa-triangle-exclamation'></i> ชำรุด</div>";
-        else if (data.lastStatus === "PASS") document.getElementById('vStatus').innerHTML = "<div class='asset-badge badge-pass' style='font-size:1rem; padding:8px 20px;'><i class='fa-solid fa-circle-check'></i> ปกติ</div>";
-        else document.getElementById('vStatus').innerHTML = "<div class='asset-badge badge-pending' style='font-size:1rem; padding:8px 20px;'><i class='fa-regular fa-clock'></i> รอตรวจเดือนนี้</div>";
-
-        if (data.lastStatus !== "PENDING") {
-          let chkHtml = ""; const cList = assetId.includes("EL-") ? ["ปลั๊กไฟแน่นหนา", "หลอดไฟสว่าง", "ปุ่ม Test ปกติ", "แบตไม่บวม", "เครื่องสมบูรณ์"] : ["สลัก/ซีลอยู่ครบ", "ความดันสีเขียว", "สายฉีดไม่ขาด", "ถังไม่เป็นสนิม", "คันบีบคล่องตัว"];
-          for(let i=0; i<5; i++) { let icon = data.checks[i] === "Pass" ? "<span style='color:var(--success);'>✔</span>" : "<span style='color:var(--danger);'>✘</span>"; chkHtml += `<li>${icon} ${cList[i]}</li>`; }
-          document.getElementById('vChecklistList').innerHTML = chkHtml; document.getElementById('vChecklistArea').style.display = "block";
-        } else { document.getElementById('vChecklistArea').style.display = "none"; }
-
-        let tableHtml = ""; const currentMonthIndex = new Date().getMonth();
-        data.yearlyLogs.forEach((log, index) => {
-          let statusIcon = "⚪"; if(log.status === "PASS") statusIcon = "🟢"; else if(log.status === "FAIL") statusIcon = "🔴";
-          let rowStyle = (index === currentMonthIndex) ? 'background: rgba(56, 189, 248, 0.05); font-weight:600;' : '';
-          // 🚫 ไม่มีการเพิ่มปุ่มกดดูรูปภาพแล้ว มีแค่ เดือน | วันที่ | สถานะ | ผู้ตรวจ
-          tableHtml += `<tr style="${rowStyle}"><td>${log.monthName}</td><td>${log.date}</td><td>${statusIcon}</td><td style="font-size:0.75rem;">${log.inspector}</td></tr>`;
-        });
-        document.getElementById('yearlyTableBody').innerHTML = tableHtml;
-
-        if (currentUser) {
-          if(data.lastStatus !== "PENDING") {
-             document.getElementById('btnInspectNow').style.display = 'none';
-             Swal.fire({icon:'info', title:'ตรวจไปแล้ว', text:`อุปกรณ์รหัส ${assetId} ถูกตรวจสอบแล้วในเดือนนี้`, timer: 2000, showConfirmButton: false});
-             navTo('view');
-          } else {
-             document.getElementById('vAssetIdForm').innerText = assetId; document.getElementById('vBuildingForm').innerText = data.building; document.getElementById('vFloorForm').innerText = data.floor;
-             document.getElementById('displayInspector').innerText = currentUser.name;
-             buildFormUI(assetId); navTo('form');
-          }
-        } else {
-          document.getElementById('btnInspectNow').style.display = 'block';
-          navTo('view');
-        }
-      }).catch(err => Swal.fire('ข้อผิดพลาด', err.message, 'error').then(() => initScanner()));
-    }
-
+    // --- View Mode ---
     function switchViewTab(tab) {
       document.getElementById('btnTabCurrent').classList.remove('active'); document.getElementById('btnTabYearly').classList.remove('active');
       document.getElementById('tabCurrent').style.display = 'none'; document.getElementById('tabYearly').style.display = 'none';
@@ -423,28 +428,78 @@
       else { document.getElementById('btnTabYearly').classList.add('active'); document.getElementById('tabYearly').style.display = 'block'; }
     }
 
-    function handleLogin() {
-      const user = document.getElementById('usernameInput').value; const pass = document.getElementById('passwordInput').value;
-      if(!user || !pass) return Swal.fire('ข้อมูลไม่ครบ', '', 'warning');
-      Swal.fire({ title: 'กำลังตรวจสอบ...', didOpen: () => Swal.showLoading() });
-      apiRequest('verifyLogin', { username: user, password: pass, deviceData: { userAgent: navigator.userAgent } })
-      .then(userData => { 
-        currentUser = userData; sessionStorage.setItem('ntl_user', JSON.stringify(userData)); updateAuthUI();
-        Swal.fire({ icon: 'success', title: `ยินดีต้อนรับ ${userData.name}`, timer: 1500, showConfirmButton: false });
-        document.getElementById('usernameInput').value = ''; document.getElementById('passwordInput').value = '';
-        navTo('scanner');
-      }).catch(err => Swal.fire('ปฏิเสธการเข้าถึง', err.message, 'error'));
+    function loadAssetData(assetId, mode='inspector') {
+      if(!assetId || assetId.trim() === "") return Swal.fire('ระบุรหัสผิดพลาด', '', 'warning');
+      Swal.fire({ title: 'ดึงข้อมูล...', didOpen: () => Swal.showLoading() });
+      
+      apiRequest('getAssetData', { assetId: assetId }).then(data => {
+        Swal.close(); 
+        
+        if (mode === 'view') {
+          document.getElementById('vType').innerText = assetId.includes("EL-") ? "Emergency Light" : "Fire Extinguisher";
+          document.getElementById('vAssetIdView').innerText = assetId; document.getElementById('vBuildingView').innerText = data.building; document.getElementById('vFloorView').innerText = data.floor;
+          document.getElementById('vMonth').innerText = data.currentMonth; document.getElementById('vYear').innerText = data.currentYear;
+          document.getElementById('vDate').innerText = data.lastDate; document.getElementById('vInspector').innerText = data.lastInspector;
+
+          if (data.lastStatus === "FAIL") document.getElementById('vStatus').innerHTML = "<div style='color:var(--danger); font-size:1.2rem; font-weight:700;'><i class='fa-solid fa-triangle-exclamation'></i> ชำรุด</div>";
+          else if (data.lastStatus === "PASS") document.getElementById('vStatus').innerHTML = "<div style='color:var(--success); font-size:1.2rem; font-weight:700;'><i class='fa-solid fa-circle-check'></i> ปกติ</div>";
+          else document.getElementById('vStatus').innerHTML = "<div style='color:var(--text-muted); font-size:1.2rem; font-weight:700;'><i class='fa-regular fa-clock'></i> รอตรวจ</div>";
+
+          if (data.lastStatus !== "PENDING" && data.checks.length > 0) {
+            let chkHtml = ""; 
+            for(let i=0; i<5; i++) { let icon = data.checks[i] === "Pass" ? "<span style='color:var(--success);'>✔</span>" : "<span style='color:var(--danger);'>✘</span>"; chkHtml += `<li>${icon} ${data.dynamicChecklist[i]}</li>`; }
+            document.getElementById('vChecklistList').innerHTML = chkHtml; document.getElementById('vChecklistArea').style.display = "block";
+          } else { document.getElementById('vChecklistArea').style.display = "none"; }
+
+          let tableHtml = ""; const currentMonthIndex = new Date().getMonth();
+          data.yearlyLogs.forEach((log, index) => {
+            let statusIcon = "⚪"; if(log.status === "PASS") statusIcon = "🟢"; else if(log.status === "FAIL") statusIcon = "🔴";
+            let rowStyle = (index === currentMonthIndex) ? 'background: rgba(56, 189, 248, 0.05); font-weight:600;' : '';
+            tableHtml += `<tr style="${rowStyle}"><td>${log.monthName}</td><td>${log.date}</td><td>${statusIcon}</td><td style="font-size:0.75rem;">${log.inspector}</td></tr>`;
+          });
+          document.getElementById('yearlyTableBody').innerHTML = tableHtml;
+        } 
+        else if (mode === 'inspector') {
+          if(data.lastStatus !== "PENDING") {
+             Swal.fire({icon:'info', title:'ตรวจไปแล้ว', text:`รหัส ${assetId} ตรวจแล้วในเดือนนี้`, timer: 2000, showConfirmButton: false}).then(()=> initScanner());
+          } else {
+             currentAssetForForm = assetId; dynamicChecklistForm = data.dynamicChecklist;
+             document.getElementById('vAssetIdForm').innerText = assetId; document.getElementById('vBuildingForm').innerText = data.building; document.getElementById('vFloorForm').innerText = data.floor;
+             if(currentUser) document.getElementById('displayInspector').innerText = currentUser.name;
+             buildFormUI(); navTo('form');
+          }
+        }
+      }).catch(err => { Swal.fire('ข้อผิดพลาด', err.message, 'error'); if(mode==='inspector') initScanner(); });
     }
 
-    function buildFormUI(assetId) {
-      const isEL = assetId.includes("EL-");
-      const pLabels = isEL ? ["ตัวเครื่อง", "ไฟสถานะ", "แสงสว่าง", "ปลั๊กไฟ"] : ["เต็มตัว", "มาตรวัด", "สลักล็อก", "สายฉีด"];
-      const cList = isEL ? ["ปลั๊กไฟแน่นหนา", "หลอดไฟสว่าง", "ปุ่ม Test ปกติ", "แบตไม่บวม", "เครื่องสมบูรณ์"] : ["สลัก/ซีลอยู่ครบ", "ความดันสีเขียว", "สายฉีดไม่ขาด", "ถังไม่เป็นสนิม", "คันบีบคล่องตัว"];
+    // --- Inspector Scanner Mode ---
+    function switchInspectorTab(tab) {
+      document.getElementById('btnScanTab').classList.remove('active'); document.getElementById('btnHistoryTab').classList.remove('active');
+      document.getElementById('inspectorScanTab').style.display = 'none'; document.getElementById('inspectorHistoryTab').style.display = 'none';
+      if (tab === 'scan') { document.getElementById('btnScanTab').classList.add('active'); document.getElementById('inspectorScanTab').style.display = 'block'; initScanner(); } 
+      else { document.getElementById('btnHistoryTab').classList.add('active'); document.getElementById('inspectorHistoryTab').style.display = 'block'; stopScanner(); loadMyHistory(); }
+    }
+
+    function initScanner() {
+      if (isCameraRunning) return;
+      if (!html5QrcodeScanner) html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250}, aspectRatio: 1.0, videoConstraints: { facingMode: "environment" } }, false);
+      html5QrcodeScanner.render(onScanSuccess, (err) => {}); isCameraRunning = true;
+    }
+    function stopScanner() { if (html5QrcodeScanner && isCameraRunning) { html5QrcodeScanner.clear(); isCameraRunning = false; } }
+    function onScanSuccess(decodedText) {
+      stopScanner(); let assetId = decodedText;
+      if (decodedText.includes('?id=')) assetId = new URL(decodedText).searchParams.get('id');
+      loadAssetData(assetId.toUpperCase(), 'inspector');
+    }
+
+    function buildFormUI() {
       let pUrl = ''; photos = [undefined,undefined,undefined,undefined];
-      for(let i=0; i<4; i++) pUrl += `<label class="photo-box"><input type="file" accept="image/jpeg, image/png" capture="environment" style="display:none;" onchange="processImg(event, ${i})"><i class="fa-solid fa-camera" style="font-size:1.5rem; color:var(--text-muted);"></i><span style="font-size:0.8rem; margin-top:5px; color:var(--text-muted);">${pLabels[i]}</span><img id="img${i}"><div class="photo-del" id="del${i}" onclick="removeImg(event, ${i})"><i class="fa-solid fa-times"></i></div></label>`;
+      const pLabels = currentAssetForForm.includes("EL-") ? ["ภาพกว้าง", "ไฟสถานะ", "แสงสว่าง", "ปลั๊กไฟ"] : ["ภาพกว้าง", "มาตรวัด", "สลักล็อก", "สายฉีด"];
+      for(let i=0; i<4; i++) pUrl += `<label class="photo-box"><input type="file" accept="image/jpeg, image/png" capture="environment" style="display:none;" onchange="processImg(event, ${i})"><div style="background:var(--primary); color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:10px;"><i class="fa-solid fa-cloud-arrow-up"></i></div><span style="font-size:0.8rem; font-weight:600; color:var(--text);">${pLabels[i]}</span><img id="img${i}"><div class="photo-del" id="del${i}" onclick="removeImg(event, ${i})"><i class="fa-solid fa-times"></i></div></label>`;
       document.getElementById('photoArea').innerHTML = pUrl;
+      
       let cUrl = '';
-      cList.forEach((item, idx) => { cUrl += `<div class="checklist-item"><span style="flex:1;">${idx+1}. ${item}</span><label class="switch"><input type="checkbox" id="chk${idx}" checked><span class="slider"></span></label></div>`; });
+      dynamicChecklistForm.forEach((item, idx) => { cUrl += `<div class="checklist-item"><span style="flex:1;">${idx+1}. ${item}</span><label class="switch"><input type="checkbox" id="chk${idx}" checked><span class="slider"></span></label></div>`; });
       document.getElementById('checklistArea').innerHTML = cUrl;
     }
 
@@ -456,53 +511,67 @@
 
     function submitInspection() {
       if(isSubmitting) return; const uCount = photos.filter(p => p).length;
-      if(uCount < 2) return Swal.fire('ข้อมูลไม่ครบ', 'บังคับถ่ายภาพ 2 มุม', 'warning');
+      if(uCount < 2) return Swal.fire('รูปไม่ครบ', 'ถ่ายภาพอย่างน้อย 2 มุม', 'warning');
       isSubmitting = true; document.getElementById('submitBtn').disabled = true; 
-      Swal.fire({ title: 'กำลังเข้ารหัสข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       let finalRes = "PASS"; const chkVal = [];
       for(let i=0; i<5; i++) { const el = document.getElementById(`chk${i}`); const val = el ? (el.checked ? "Pass" : "Fail") : ""; chkVal.push(val); if(val === "Fail") finalRes = "FAIL"; }
-      const payload = { assetId: currentAssetForForm, building: document.getElementById('vBuildingForm').innerText, inspector: currentUser.name, device: { userAgent: navigator.userAgent }, gps: gpsLocation, result: finalRes, checks: chkVal, photos: photos };
       
+      const payload = { assetId: currentAssetForForm, building: document.getElementById('vBuildingForm').innerText, inspector: currentUser.name, device: { userAgent: navigator.userAgent }, gps: gpsLocation, result: finalRes, checks: chkVal, photos: photos };
       apiRequest('processInspection', { data: payload })
       .then(() => { 
         isSubmitting = false; document.getElementById('submitBtn').disabled = false;
-        Swal.fire({icon: 'success', title: 'บันทึกสำเร็จ!', text: 'เปิดกล้องสแกนถังถัดไป...', timer: 2000, showConfirmButton: false}).then(() => navTo('scanner')); 
+        Swal.fire({icon: 'success', title: 'บันทึกเรียบร้อย', timer: 1500, showConfirmButton: false}).then(() => navTo('scanner')); 
       })
       .catch(err => { isSubmitting = false; document.getElementById('submitBtn').disabled = false; Swal.fire('ผิดพลาด', err.message, 'error'); });
     }
 
+    function loadMyHistory() {
+      if(!currentUser) return;
+      document.getElementById('myHistoryList').innerHTML = '<tr><td colspan="3"><i class="fa-solid fa-spinner fa-spin"></i> โหลด...</td></tr>';
+      apiRequest('getInspectorHistory', { inspectorName: currentUser.name }).then(data => {
+        document.getElementById('myTotal').innerText = data.total; document.getElementById('myPass').innerText = data.pass; document.getElementById('myFail').innerText = data.fail;
+        let html = "";
+        data.logs.forEach(l => { let icon = l.status === "PASS" ? "🟢" : "🔴"; html += `<tr><td>${l.date}</td><td>${l.id}</td><td>${icon}</td></tr>`; });
+        document.getElementById('myHistoryList').innerHTML = html || '<tr><td colspan="3">ยังไม่มีผลงานในเดือนนี้</td></tr>';
+      });
+    }
+
+    // --- Login & Dashboard ---
+    function handleLogin() {
+      const user = document.getElementById('usernameInput').value; const pass = document.getElementById('passwordInput').value;
+      if(!user || !pass) return Swal.fire('ข้อมูลไม่ครบ', '', 'warning');
+      Swal.fire({ title: 'ตรวจสอบสิทธิ์...', didOpen: () => Swal.showLoading() });
+      apiRequest('verifyLogin', { username: user, password: pass, deviceData: { userAgent: navigator.userAgent } })
+      .then(userData => { 
+        currentUser = userData; sessionStorage.setItem('ntl_user', JSON.stringify(userData)); updateAuthUI();
+        Swal.fire({ icon: 'success', title: `ยินดีต้อนรับ ${userData.name}`, timer: 1500, showConfirmButton: false });
+        document.getElementById('usernameInput').value = ''; document.getElementById('passwordInput').value = '';
+        if(userData.role === 'Admin') navTo('dashboard'); else navTo('scanner');
+      }).catch(err => Swal.fire('ปฏิเสธการเข้าถึง', err.message, 'error'));
+    }
+
     function loadDashboardData() {
-      document.getElementById('assetCardContainer').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px;"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i><br><br>กำลังดึงข้อมูลเรียลไทม์...</div>';
+      document.getElementById('allAssetsBody').innerHTML = '<tr><td colspan="3"><i class="fa-solid fa-spinner fa-spin"></i> ดึงข้อมูล...</td></tr>';
       apiRequest('getFullDashboardData', {}).then(data => {
         document.getElementById('dashTotal').innerText = data.total; document.getElementById('dashPass').innerText = data.pass; document.getElementById('dashFail').innerText = data.fail; document.getElementById('dashPending').innerText = data.pending;
-        dashboardDataCache = data.allAssets; renderCards(dashboardDataCache);
+        dashboardDataCache = data.allAssets;
+        let html = "";
+        data.allAssets.forEach(item => {
+          let badge = "⚪ รอตรวจ"; if(item.status === "PASS") badge = "🟢 ปกติ"; if(item.status === "FAIL") badge = "🔴 ชำรุด";
+          html += `<tr><td style="color:var(--primary); font-weight:600;">${item.id}</td><td>${item.floor}</td><td>${badge}</td></tr>`;
+        });
+        document.getElementById('allAssetsBody').innerHTML = html;
       }).catch(err => Swal.fire('ข้อผิดพลาด', err.message, 'error'));
     }
 
-    function renderCards(dataArr) {
-      let html = "";
-      dataArr.forEach(item => {
-        let bClass = "badge-pending"; let bText = "⚪ รอตรวจ"; let bIcon = "fa-clock";
-        if(item.status === "PASS") { bClass = "badge-pass"; bText = "🟢 ปกติ"; bIcon = "fa-check-circle"; }
-        if(item.status === "FAIL") { bClass = "badge-fail"; bText = "🔴 ชำรุด"; bIcon = "fa-triangle-exclamation"; }
-        // 🚫 เมื่อคลิกดูประวัติจากหน้า Dashboard ก็จะโชว์ข้อมูลประวัติแบบตาราง (ไม่มีรูปภาพ)
-        html += `<div class="asset-card" onclick="loadAssetData('${item.id}')"><div><div style="color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-building"></i> ${item.building.substring(0,12)} | ชั้น ${item.floor}</div><div style="font-weight:700; color:var(--primary); font-size:1.1rem; margin-top:5px;">${item.id}</div></div><div class="asset-badge ${bClass}"><i class="fa-solid ${bIcon}"></i> ${bText}</div></div>`;
-      });
-      document.getElementById('assetCardContainer').innerHTML = html || "<div style='grid-column:1/-1; text-align:center; color:var(--text-muted); padding:30px;'>ไม่มีข้อมูลในหมวดหมู่นี้</div>";
-    }
-
-    function filterCards(status, btnElement) {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btnElement.classList.add('active');
-      if (status === 'ALL') renderCards(dashboardDataCache); else renderCards(dashboardDataCache.filter(item => item.status === status));
-    }
-
-    function exportCSV() {
-      if(dashboardDataCache.length === 0) return Swal.fire('ไม่มีข้อมูล', 'กรุณารอโหลดข้อมูลให้เสร็จสิ้น', 'warning');
-      let csv = "data:text/csv;charset=utf-8,\uFEFF"; csv += "รหัสอุปกรณ์,อาคาร,ชั้น,สถานะเดือนนี้\n";
-      dashboardDataCache.forEach(item => { csv += `${item.id},${item.building},${item.floor},${item.status}\n`; });
-      const encodedUri = encodeURI(csv); const link = document.createElement("a");
-      link.setAttribute("href", encodedUri); link.setAttribute("download", `NTL_Safety_Report_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    function exportExcel() {
+      if(dashboardDataCache.length === 0) return Swal.fire('ไม่มีข้อมูล', '', 'warning');
+      const wsData = [["รหัสอุปกรณ์", "อาคาร", "ชั้น", "สถานะการตรวจเดือนนี้"]];
+      dashboardDataCache.forEach(i => wsData.push([i.id, i.building, i.floor, i.status]));
+      const ws = XLSX.utils.aoa_to_sheet(wsData); const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Safety Report");
+      XLSX.writeFile(wb, `NTL_Safety_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
   </script>
 </body>
