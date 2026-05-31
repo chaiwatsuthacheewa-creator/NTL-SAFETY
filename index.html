@@ -105,8 +105,6 @@
     
     .data-table { width: 100%; border-collapse: collapse; background: var(--surface); color: var(--text); font-size: 0.85rem; }
     .data-table th, .data-table td { border-bottom: 1px solid var(--border); padding: 14px 15px; text-align: left; vertical-align: middle;}
-    
-    /* แก้ไขหัวตารางไม่ให้โปร่งใส */
     .data-table th { background: var(--surface); color: var(--primary); font-weight: 600; position: sticky; top: 0; z-index: 10; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
     .data-table td.center-col, .data-table th.center-col { text-align: center; }
     
@@ -139,7 +137,7 @@
     .master-row { cursor: pointer; transition: 0.2s; }
     .master-row:hover { background: rgba(0,51,160,0.03); }
     
-    /* 💎 Global SweetAlert2 Professional Theme */
+    /* 💎 Global SweetAlert2 */
     .swal2-popup { font-family: 'Prompt', sans-serif !important; border-radius: 20px !important; box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important; padding: 2em !important; background: var(--surface) !important; color: var(--text) !important;}
     .swal2-title { font-size: 1.4rem !important; color: var(--text) !important; padding-top: 0 !important; font-weight: 700 !important; }
     .swal2-html-container { font-size: 1rem !important; color: var(--text-muted) !important; margin: 1em 1.6em 0.3em !important;}
@@ -148,8 +146,11 @@
     .admin-modal-popup { max-width: 95%; }
     .admin-modal-title { text-align: left !important; border-bottom: 2px solid var(--border); padding-bottom: 15px !important; }
 
-    /* Custom Checkbox for Bulk Export */
     .custom-chk { transform: scale(1.3); cursor: pointer; accent-color: var(--primary); }
+    
+    /* 📆 Month Picker Style */
+    .month-picker-input { padding: 8px 15px; border-radius: 8px; border: 2px solid var(--border); color: var(--text); background: var(--surface); font-family: inherit; font-size: 0.95rem; font-weight: 600; outline: none; transition: 0.2s; cursor: pointer; }
+    .month-picker-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,160,0.1); }
   </style>
 </head>
 <body>
@@ -194,7 +195,6 @@
       </div>
     </div>
 
-    <!-- 👁️ 1. VIEW MODE -->
     <div id="viewSection" style="display: none; max-width:600px; margin:0 auto;">
       <div class="card" style="text-align: center;">
         <p style="color:var(--text-muted); font-size:0.9rem; margin:0 0 15px;">
@@ -246,7 +246,6 @@
       </div>
     </div>
 
-    <!-- 👨‍🔧 2. INSPECTOR MODE -->
     <div id="scannerSection" style="display: none; max-width:600px; margin:0 auto;">
       <div class="tab-nav" style="margin-bottom:15px;">
         <button class="tab-btn active" id="btnScanTab" onclick="switchInspectorTab('scan')"><i class="fa-solid fa-camera"></i> สแกน</button>
@@ -283,7 +282,6 @@
       </div>
     </div>
 
-    <!-- 🔐 3. LOGIN SECTION -->
     <div id="loginSection" style="display: none;">
       <div class="card" style="max-width: 450px; margin: 0 auto; text-align:center; padding:30px 20px;">
         <div style="font-size:3rem; color:var(--primary); margin-bottom:10px;"><i class="fa-solid fa-id-badge"></i></div>
@@ -295,7 +293,6 @@
       </div>
     </div>
 
-    <!-- 📝 4. INSPECTION FORM -->
     <div id="formSection" style="display: none; max-width:650px; margin:0 auto;">
       <div class="card" style="background:var(--primary); color:white; border:none; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
         <div>
@@ -323,7 +320,6 @@
       </button>
     </div>
 
-    <!-- 👔 5. ADMIN DASHBOARD -->
     <div id="dashboardSection" style="display: none; max-width:1000px; margin:0 auto;">
       
       <div class="stat-grid" id="dashStatCards">
@@ -333,16 +329,16 @@
         <div class="stat-box" style="border-top: 4px solid var(--text-muted);" onclick="setDashFilter('PENDING', this)"><h2 id="dashPending" style="color:var(--text-muted);">0</h2><p>รอตรวจ</p></div>
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid var(--border); margin-bottom: 15px; padding-bottom:5px;">
-        <div class="filter-tabs" id="dashBuildingFilters" style="border:none; margin:0;"></div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <!-- 📥 เพิ่มปุ่ม Export PDF แบบรวมตรงนี้ -->
-          <button class="btn" style="width:auto; font-size:0.85rem; padding:8px 15px; border-radius:8px; margin-bottom:5px; background:var(--danger); color:white; border:none;" onclick="exportBulkPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
-          <button class="btn btn-primary" style="width:auto; font-size:0.85rem; padding:8px 15px; border-radius:8px; margin-bottom:5px;" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Export .xlsx</button>
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid var(--border); margin-bottom: 15px; padding-bottom:5px; flex-wrap:wrap; gap:10px;">
+        <div class="filter-tabs" id="dashBuildingFilters" style="border:none; margin:0; padding-bottom:0;"></div>
+        
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <input type="month" id="dashMonthPicker" class="month-picker-input" onchange="changeDashMonth()">
+          <button class="btn" style="width:auto; font-size:0.85rem; padding:8px 15px; border-radius:8px; background:var(--danger); color:white; border:none;" onclick="exportBulkPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+          <button class="btn btn-primary" style="width:auto; font-size:0.85rem; padding:8px 15px; border-radius:8px;" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Export .xlsx</button>
         </div>
       </div>
 
-      <!-- Master List (Table) พร้อมระบบ Checkbox เลือกถัง -->
       <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; background:var(--surface); box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
         <table class="data-table" style="margin:0; border:none;">
           <thead>
@@ -425,6 +421,13 @@
           badge.style.color = 'var(--text-muted)'; 
       }
       
+      // ตั้งค่าค่าเริ่มต้น Month Picker เป็นเดือนปัจจุบัน
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const monthPicker = document.getElementById('dashMonthPicker');
+      if(monthPicker) monthPicker.value = `${yyyy}-${mm}`;
+
       setTimeout(() => {
         apiRequest('checkConnection', {}).then(() => {
             if(badge) { badge.innerHTML = '<i class="fa-solid fa-wifi"></i> ออนไลน์'; badge.style.color = 'var(--success)'; }
@@ -740,11 +743,29 @@
       }).catch(err => Swal.fire({title: 'ปฏิเสธการเข้าถึง', text: err.message, icon: 'error', allowOutsideClick: false}));
     }
 
-    // --- 👔 Admin Dashboard & Modal ---
+    // --- 👔 Admin Dashboard ---
+    
+    // ฟังก์ชันช่วยดึงค่าเดือนที่เลือกจาก Month Picker
+    function getSelectedMonth() {
+      const picker = document.getElementById('dashMonthPicker');
+      if (picker && picker.value) {
+        const parts = picker.value.split('-'); // format "YYYY-MM"
+        return `${parts[1]}/${parts[0]}`; // return "MM/YYYY"
+      }
+      return ""; // ปล่อยว่างให้ Backend จัดการเป็นเดือนปัจจุบัน
+    }
+
+    // เมื่อเปลี่ยนเดือน ให้ดึงข้อมูลใหม่
+    function changeDashMonth() {
+      loadDashboardData();
+    }
+
     function loadDashboardData() {
       setHtml('allAssetsBody', '<tr><td colspan="4" class="center-col"><i class="fa-solid fa-spinner fa-spin"></i> ดึงข้อมูล...</td></tr>');
       
-      apiRequest('getFullDashboardData', {}).then(data => {
+      const targetMonth = getSelectedMonth();
+      
+      apiRequest('getFullDashboardData', { monthYear: targetMonth }).then(data => {
         dashboardDataCache = data.allAssets; dashBuildingsCache = data.buildings;
         
         let filterHtml = `<button class="filter-tab active" onclick="setDashBuilding('ALL', this)">ทุกอาคาร</button>`;
@@ -848,6 +869,8 @@
 
     // 🚀 ระบบ Export PDF เดี่ยว (จากใน Modal)
     function generateSinglePDF(assetId) {
+      const targetMonth = getSelectedMonth();
+      
       Swal.fire({ 
         title: 'กำลังสร้างเอกสาร PDF...', 
         html: `ระบบกำลังดึงรูปภาพและสร้างรายงานสำหรับ <b>${assetId}</b><br>โปรดรอสักครู่ (ประมาณ 5-10 วินาที)<br><br><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i>`,
@@ -855,7 +878,7 @@
         allowOutsideClick: false 
       });
       
-      apiRequest('generatePDF', { assetId: assetId }).then(pdfUrl => {
+      apiRequest('generatePDF', { assetId: assetId, monthYear: targetMonth }).then(pdfUrl => {
         Swal.fire({
           icon: 'success', title: 'สร้าง PDF สำเร็จ!',
           html: `<a href="${pdfUrl}" target="_blank" class="btn btn-primary" style="text-decoration:none; display:inline-block; margin-top:15px; border-radius:10px; padding:15px;"><i class="fa-solid fa-download"></i> คลิกเปิด / ดาวน์โหลด</a>`,
@@ -866,12 +889,13 @@
       });
     }
 
-    // 🚀 ระบบ Bulk Export PDF (วนลูปสร้างไฟล์ทีละตัว ป้องกันระบบค้าง)
+    // 🚀 ระบบ Bulk Export PDF (ส่งเดือนที่เลือกไปด้วย)
     async function exportBulkPDF() {
       const chks = document.querySelectorAll('.row-chk:checked');
       if(chks.length === 0) return Swal.fire('ไม่ได้เลือกข้อมูล', 'กรุณาติ๊กช่องสี่เหลี่ยมด้านหน้าถัง ที่ต้องการ Export อย่างน้อย 1 รายการ', 'warning');
       
       const ids = Array.from(chks).map(c => c.value);
+      const targetMonth = getSelectedMonth();
       
       Swal.fire({
         title: 'กำลังสร้าง PDF (Bulk Mode)...',
@@ -884,7 +908,7 @@
       
       for(let i = 0; i < ids.length; i++) {
         try {
-          await apiRequest('generatePDF', { assetId: ids[i] });
+          await apiRequest('generatePDF', { assetId: ids[i], monthYear: targetMonth });
           successCount++;
         } catch(e) {
           failCount++;
@@ -905,11 +929,15 @@
 
     function exportExcel() {
       if(dashboardDataCache.length === 0) return Swal.fire({title: 'ไม่มีข้อมูล', text: '', icon: 'warning', allowOutsideClick: false});
-      const wsData = [["รหัสอุปกรณ์", "อาคาร", "ชั้น", "สถานะการตรวจเดือนนี้"]];
+      
+      const picker = document.getElementById('dashMonthPicker');
+      let monthStr = picker && picker.value ? picker.value : new Date().toISOString().split('T')[0];
+      
+      const wsData = [["รหัสอุปกรณ์", "อาคาร", "ชั้น", `สถานะการตรวจเดือน ${monthStr}`]];
       dashboardDataCache.forEach(i => wsData.push([i.id, i.building, i.floor, i.status]));
       const ws = XLSX.utils.aoa_to_sheet(wsData); const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Safety Report");
-      XLSX.writeFile(wb, `NTL_Safety_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+      XLSX.writeFile(wb, `NTL_Safety_Report_${monthStr}.xlsx`);
     }
   </script>
 </body>
