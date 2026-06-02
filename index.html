@@ -9,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
   <style>
     /* 🎨 1. Base Variables */
@@ -58,7 +59,6 @@
     }
 
     .connection-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; margin-top: 5px; border: 1px solid transparent; }
-
     .header-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
     .page-title { font-size: 1.6rem; font-weight: 700; color: var(--text); letter-spacing: -0.5px;}
     
@@ -81,7 +81,7 @@
     .photo-del { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.9); color: var(--danger); border-radius: 50%; width: 28px; height: 28px; display: none; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     .upload-icon-circle { background: var(--surface); color: var(--text-muted); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-    /* 🎚️ Sliding Toggle */
+    /* 🎚️ Sliding Toggle (PASS/FAIL) */
     .checklist-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed var(--border); }
     .checklist-row:last-child { border-bottom: none; }
     .checklist-text { flex: 1; font-weight: 600; font-size: 0.95rem; color: var(--text); padding-right: 15px; line-height: 1.4; }
@@ -98,17 +98,19 @@
     .toggle-container input:checked + .toggle-track .toggle-text-pass { opacity: 1; }
     .toggle-container input:checked + .toggle-track .toggle-text-fail { opacity: 0; }
 
-    /* 📋 Tables & Tabs */
-    .tab-nav { display: flex; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); }
-    .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: inherit; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); background: transparent; border: none; border-radius: 8px; cursor: pointer; }
-    .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    
+    /* 📋 Tables Customization (แก้บัคหัวตารางโปร่งแสง) */
     .data-table { width: 100%; border-collapse: collapse; background: var(--surface); color: var(--text); font-size: 0.85rem; }
     .data-table th, .data-table td { border-bottom: 1px solid var(--border); padding: 14px 15px; text-align: left; vertical-align: middle;}
-    .data-table th { background: var(--surface); color: var(--primary); font-weight: 600; position: sticky; top: 0; z-index: 10; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+    .data-table th { 
+      background-color: var(--surface) !important; /* บังคับทึบแสง */
+      color: var(--primary); font-weight: 600; 
+      position: sticky; top: 0; z-index: 10; 
+      text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; 
+      box-shadow: inset 0 -2px 0 var(--border); /* ใช้ shadow แทน border-bottom ตอน sticky */
+    }
     .data-table td.center-col, .data-table th.center-col { text-align: center; }
     
-    /* 🏷️ Professional Badges */
+    /* 🏷️ Badges Component */
     .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.3px;}
     .badge-pass { background: rgba(16,185,129,0.15); color: #065f46; }
     .badge-fail { background: rgba(239,68,68,0.15); color: #991b1b; }
@@ -128,29 +130,41 @@
     .stat-box h2 { margin: 0 0 5px; font-size: 1.8rem; }
     .stat-box p { margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;}
 
+    /* 🗂️ Minimalist Layout Filter Tabs */
     .filter-tabs { display: flex; gap: 20px; overflow-x: auto; border-bottom: 2px solid var(--border); margin-bottom: 15px; scrollbar-width: none; }
     .filter-tabs::-webkit-scrollbar { display: none; }
     .filter-tab { background: transparent; border: none; outline: none; color: var(--text-muted); font-size: 0.95rem; font-family: inherit; font-weight: 500; padding: 10px 5px; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: 0.2s;}
     .filter-tab:hover { color: var(--primary); }
     .filter-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 
+    /* 📦 Asset Grid & Smart Component Layout */
+    .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 16px; margin-top: 15px; }
+    .asset-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 15px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.01); }
+    .asset-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: var(--primary); }
+    .asset-icon { font-size: 2.3rem; margin-bottom: 12px; color: var(--primary); }
+    .asset-id { font-weight: 700; font-size: 1.05rem; color: var(--text); margin-bottom: 6px; letter-spacing: -0.3px;}
+    .asset-loc { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; line-height: 1.4; }
+
+    .custom-chk { transform: scale(1.3); cursor: pointer; accent-color: var(--primary); }
+    .month-picker-input { padding: 8px 15px; border-radius: 8px; border: 2px solid var(--border); color: var(--text); background: var(--surface); font-family: inherit; font-size: 0.95rem; font-weight: 600; outline: none; transition: 0.2s; cursor: pointer; }
+    .month-picker-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,160,0.1); }
+
     .master-row { cursor: pointer; transition: 0.2s; }
     .master-row:hover { background: rgba(0,51,160,0.03); }
     
-    /* 💎 Global SweetAlert2 */
+    /* 💎 Global Dialog Theme for SweetAlert2 (หน้าตาสวยขึ้น ไม่แดงเถือก) */
     .swal2-popup { font-family: 'Prompt', sans-serif !important; border-radius: 20px !important; box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important; padding: 2em !important; background: var(--surface) !important; color: var(--text) !important;}
     .swal2-title { font-size: 1.4rem !important; color: var(--text) !important; padding-top: 0 !important; font-weight: 700 !important; }
     .swal2-html-container { font-size: 1rem !important; color: var(--text-muted) !important; margin: 1em 1.6em 0.3em !important;}
-    .swal2-confirm { background-color: var(--primary) !important; border-radius: 12px !important; padding: 12px 30px !important; font-weight: 600 !important; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(0,51,160,0.2) !important; border: none !important; }
+    .swal2-confirm { background-color: var(--primary) !important; color: white !important; border-radius: 12px !important; padding: 12px 30px !important; font-weight: 600 !important; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(0,51,160,0.2) !important; border: none !important; }
     .swal2-cancel { border-radius: 12px !important; padding: 12px 30px !important; font-weight: 600 !important; font-size: 1rem !important; }
     .admin-modal-popup { max-width: 95%; }
-    .admin-modal-title { text-align: left !important; border-bottom: 2px solid var(--border); padding-bottom: 15px !important; }
+    .admin-modal-title { text-align: left !important; border-bottom: 2px solid var(--border); padding-bottom: 15px !important; margin-bottom: 15px;}
 
-    .custom-chk { transform: scale(1.3); cursor: pointer; accent-color: var(--primary); }
-    
-    /* 📆 Month Picker Style */
-    .month-picker-input { padding: 8px 15px; border-radius: 8px; border: 2px solid var(--border); color: var(--text); background: var(--surface); font-family: inherit; font-size: 0.95rem; font-weight: 600; outline: none; transition: 0.2s; cursor: pointer; }
-    .month-picker-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,51,160,0.1); }
+    /* View Tab */
+    .tab-nav { display: flex; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); }
+    .tab-btn { flex: 1; padding: 10px; text-align: center; font-family: inherit; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); background: transparent; border: none; border-radius: 8px; cursor: pointer; }
+    .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
   </style>
 </head>
 <body>
@@ -163,6 +177,7 @@
     <div class="sidebar-menu">
       <button class="sidebar-btn" id="sideNavView" onclick="navTo('view')"><i class="fa-solid fa-eye"></i> โหมด View</button>
       <button class="sidebar-btn" id="sideNavScan" onclick="navTo('scanner')"><i class="fa-solid fa-qrcode"></i> โหมด Inspector</button>
+      <button class="sidebar-btn" id="sideNavInv" onclick="navTo('inventory')"><i class="fa-solid fa-boxes-stacked"></i> คลังอุปกรณ์</button>
       <button class="sidebar-btn" id="sideNavDash" onclick="navTo('dashboard')"><i class="fa-solid fa-chart-pie"></i> โหมด Admin</button>
       <button class="sidebar-btn" id="sideNavAuth" onclick="toggleAuth()">
         <i class="fa-solid fa-circle-user" id="iconSideAuth"></i> <span id="txtSideAuth">ล็อกอินช่าง</span>
@@ -196,10 +211,12 @@
     </div>
 
     <div id="viewSection" style="display: none; max-width:600px; margin:0 auto;">
-      <div class="card" style="text-align: center;">
-        <p style="color:var(--text-muted); font-size:0.9rem; margin:0 0 15px;">
+      <div class="card" style="text-align: center; padding: 30px 20px;">
+        <div style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;" id="vIcon"><i class="fa-solid fa-fire-extinguisher"></i></div>
+        <h3 id="vAssetIdView" style="margin: 0; font-size: 1.6rem; color: var(--text); font-weight: 700;">-</h3>
+        <p style="color:var(--text-muted); font-size:0.95rem; margin: 8px 0 25px;">
           <strong id="vType" style="color:var(--primary); text-transform:uppercase;">-</strong><br>
-          ID: <strong style="color:var(--text);" id="vAssetIdView">-</strong> | <i class="fa-solid fa-building"></i> <span id="vBuildingView">-</span> ชั้น <span id="vFloorView">-</span>
+          <i class="fa-solid fa-building" style="margin-top:5px;"></i> <span id="vBuildingView">-</span> | ชั้น <span id="vFloorView">-</span>
         </p>
 
         <div class="tab-nav">
@@ -208,18 +225,18 @@
         </div>
 
         <div id="tabCurrent">
-          <div style="text-align: left; background:var(--bg); padding:15px; border-radius:12px; border:1px solid var(--border);">
+          <div style="text-align: left; background:var(--bg); padding:20px; border-radius:12px; border:1px solid var(--border);">
             <h4 style="margin:0 0 15px; color:var(--text); text-align:center;">ประจำเดือน: <span id="vMonth">-</span></h4>
-            <div style="text-align: center; margin-bottom:15px;" id="vStatus"></div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.9rem;">
+            <div style="text-align: center; margin-bottom:20px;" id="vStatus"></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.95rem;">
               <span style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> ล่าสุด</span><strong style="color:var(--text);" id="vDate">-</strong>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom: 10px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.95rem; margin-bottom: 10px;">
               <span style="color:var(--text-muted);"><i class="fa-solid fa-user-shield"></i> ผู้ตรวจ</span><strong style="color:var(--text);" id="vInspector">-</strong>
             </div>
-            <div id="vChecklistArea" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid var(--border);">
-               <strong style="font-size:0.85rem; color:var(--text-muted);">ผลการตรวจ:</strong>
-               <ul style="margin:5px 0 0; padding-left: 20px; font-size:0.85rem;" id="vChecklistList"></ul>
+            <div id="vChecklistArea" style="display:none; margin-top:20px; padding-top:20px; border-top:1px dashed var(--border);">
+               <strong style="font-size:0.9rem; color:var(--text-muted);">ผลการตรวจเช็คลิสต์:</strong>
+               <ul style="margin:8px 0 0; padding-left: 20px; font-size:0.9rem; line-height: 1.6;" id="vChecklistList"></ul>
             </div>
           </div>
         </div>
@@ -343,7 +360,7 @@
         <table class="data-table" style="margin:0; border:none;">
           <thead>
             <tr>
-              <th style="width:40px; text-align:center;"><input type="checkbox" id="checkAll" class="custom-chk" onchange="toggleAllCheckboxes(this)"></th>
+              <th style="width:40px; text-align:center; padding-left:10px;"><input type="checkbox" id="checkAll" class="custom-chk" onchange="toggleAllCheckboxes(this)"></th>
               <th>รหัสถัง</th>
               <th>อาคาร (ชั้น)</th>
               <th class="center-col">สถานะ</th>
@@ -354,6 +371,17 @@
       </div>
     </div>
 
+    <div id="inventorySection" style="display: none; max-width:1000px; margin:0 auto;">
+      <div class="card" style="padding:15px; margin-bottom:15px;">
+        <div class="filter-tabs" id="invBuildingFilters" style="border:none; margin:0; padding-bottom:10px;"></div>
+        <input type="text" class="form-control" id="invSearchInput" placeholder="🔍 ค้นหารหัสอุปกรณ์..." onkeyup="filterInventory()" style="margin:0; margin-top:10px;">
+      </div>
+      
+      <div class="asset-grid" id="inventoryGrid">
+        <div style="grid-column: 1 / -1; text-align:center; padding:30px; color:var(--text-muted);"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br>กำลังดึงข้อมูลคลังอุปกรณ์...</div>
+      </div>
+    </div>
+
   </div>
 </div>
 </div> 
@@ -361,10 +389,8 @@
 <div class="bottom-nav" id="mainBotNav">
   <button class="bottom-nav-btn active" id="botNavView" onclick="navTo('view')"><i class="fa-solid fa-eye"></i><span>View</span></button>
   <button class="bottom-nav-btn" id="botNavScan" onclick="navTo('scanner')"><i class="fa-solid fa-qrcode"></i><span>Inspector</span></button>
+  <button class="bottom-nav-btn" id="botNavInv" onclick="navTo('inventory')"><i class="fa-solid fa-boxes-stacked"></i><span>คลัง</span></button>
   <button class="bottom-nav-btn" id="botNavDash" onclick="navTo('dashboard')"><i class="fa-solid fa-chart-pie"></i><span>Admin</span></button>
-  <button class="bottom-nav-btn" id="botNavAuth" onclick="toggleAuth()">
-    <i class="fa-solid fa-circle-user" id="iconBotAuth"></i><span id="txtBotAuth">ล็อกอิน</span>
-  </button>
 </div>
   
   <script>
@@ -378,6 +404,10 @@
     let dashboardDataCache = []; let dashBuildingsCache = [];
     let currentDashStatus = 'ALL'; let currentDashBuilding = 'ALL';
 
+    let inventoryDataCache = [];
+    let currentInvBuilding = 'ALL';
+
+    // 🔒 Safe Dynamic UI Setter Function 
     const setTxt = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; }
     const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; }
 
@@ -421,7 +451,6 @@
           badge.style.color = 'var(--text-muted)'; 
       }
       
-      // ตั้งค่าค่าเริ่มต้น Month Picker เป็นเดือนปัจจุบัน
       const today = new Date();
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -447,7 +476,7 @@
     });
 
     function showScreen(screenId, title) {
-      ['viewSection', 'scannerSection', 'loginSection', 'formSection', 'dashboardSection'].forEach(id => {
+      ['viewSection', 'scannerSection', 'loginSection', 'formSection', 'dashboardSection', 'inventorySection'].forEach(id => {
           const el = document.getElementById(id);
           if(el) el.style.display = 'none';
       });
@@ -459,6 +488,8 @@
 
       if(screenId === 'dashboardSection') {
          setHtml('topPageTitle', '<i class="fa-solid fa-chart-pie"></i> ภาพรวมระบบ (Overview)'); 
+      } else if (screenId === 'inventorySection') {
+         setHtml('topPageTitle', '<i class="fa-solid fa-boxes-stacked"></i> คลังอุปกรณ์'); 
       } else {
          setTxt('topPageTitle', title);
       }
@@ -480,6 +511,16 @@
           return;
         }
         showScreen('scannerSection', 'โหมดตรวจสอบ (Inspector)'); initScanner();
+      }
+      else if (target === 'inventory') {
+        const sideNav = document.getElementById('sideNavInv'); if(sideNav) sideNav.classList.add('active');
+        const botNav = document.getElementById('botNavInv'); if(botNav) botNav.classList.add('active');
+        stopScanner();
+        if (!currentUser) {
+          Swal.fire({title: 'สงวนสิทธิ์', text: 'กรุณาล็อกอินเจ้าหน้าที่ก่อน', icon: 'warning', allowOutsideClick: false}).then(() => navTo('login'));
+        } else {
+          showScreen('inventorySection', ''); loadInventoryData();
+        }
       } 
       else if (target === 'dashboard') {
         const sideNav = document.getElementById('sideNavDash'); if(sideNav) sideNav.classList.add('active');
@@ -511,6 +552,9 @@
       const authTxt = currentUser ? "ออกจากระบบ" : "ล็อกอินช่าง";
       setTxt('txtSideAuth', authTxt);
       setTxt('txtBotAuth', authTxt);
+      
+      const botNavAuthBtn = document.getElementById('botNavAuth');
+      if (botNavAuthBtn) botNavAuthBtn.style.display = currentUser ? 'none' : 'flex';
 
       const iconSide = document.getElementById('iconSideAuth');
       if (iconSide) { iconSide.className = currentUser ? 'fa-solid fa-power-off' : 'fa-solid fa-circle-user'; iconSide.style.color = currentUser ? 'var(--danger)' : 'inherit'; }
@@ -529,20 +573,93 @@
       const result = await response.json(); if(result.status === 'error') throw new Error(result.message); return result.data;
     }
 
+    // --- 📦 Inventory Controls ---
+    function loadInventoryData() {
+      setHtml('inventoryGrid', '<div style="grid-column: 1 / -1; text-align:center; padding:30px; color:var(--text-muted);"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br>กำลังดึงข้อมูลคลังอุปกรณ์...</div>');
+      apiRequest('getInventoryData', {}).then(data => {
+        inventoryDataCache = data.assets;
+        let filterHtml = `<button class="filter-tab active" onclick="setInvBuilding('ALL', this)">ทุกอาคาร</button>`;
+        data.buildings.forEach(b => { filterHtml += `<button class="filter-tab" onclick="setInvBuilding('${b}', this)">${b}</button>`; });
+        setHtml('invBuildingFilters', filterHtml);
+        filterInventory();
+      }).catch(err => {
+        setHtml('inventoryGrid', `<div style="grid-column: 1 / -1; text-align:center; padding:30px; color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> ${err.message}</div>`);
+      });
+    }
+
+    function setInvBuilding(building, el) {
+        currentInvBuilding = building;
+        document.querySelectorAll('#invBuildingFilters .filter-tab').forEach(b => b.classList.remove('active'));
+        if(el) el.classList.add('active');
+        filterInventory();
+    }
+
+    function filterInventory() {
+        const searchTxt = document.getElementById('invSearchInput').value.toLowerCase();
+        let filtered = inventoryDataCache;
+        if (currentInvBuilding !== 'ALL') filtered = filtered.filter(a => a.building === currentInvBuilding);
+        if (searchTxt.trim() !== '') filtered = filtered.filter(a => a.id.toLowerCase().includes(searchTxt));
+
+        let html = "";
+        filtered.forEach(item => {
+            const isEL = item.id.includes("EL-");
+            const icon = isEL ? '<i class="fa-solid fa-lightbulb"></i>' : '<i class="fa-solid fa-fire-extinguisher"></i>';
+            html += `
+                <div class="asset-card" onclick="openAssetDetailModal('${item.id}', '${item.building}', '${item.floor}', '${item.lastDate}', '${item.lastInspector}')">
+                    <div class="asset-icon">${icon}</div>
+                    <div class="asset-id">${item.id}</div>
+                    <div class="asset-loc">${item.building}<br>ชั้น ${item.floor}</div>
+                </div>
+            `;
+        });
+        setHtml('inventoryGrid', html || '<div style="grid-column: 1 / -1; text-align:center; padding:30px; color:var(--text-muted);">ไม่พบอุปกรณ์ที่ค้นหา</div>');
+    }
+
+    // 🪟 Asset Detail & QR Code Modal
+    function openAssetDetailModal(id, bldg, flr, lastDate, lastInsp) {
+        Swal.fire({
+            title: `<div class="admin-modal-title" style="margin-bottom:5px;"><i class="fa-solid fa-info-circle"></i> ข้อมูลอุปกรณ์</div>`,
+            html: `
+              <div style="text-align:left; font-size:1.05rem; color:var(--text);">
+                <p><strong>รหัส:</strong> <span style="color:var(--primary); font-weight:700;">${id}</span></p>
+                <p><strong>อาคาร:</strong> ${bldg}</p>
+                <p><strong>ชั้น:</strong> ${flr}</p>
+                <p><strong>ตรวจสอบล่าสุด:</strong> <span style="color:var(--primary); font-weight:600;">${lastDate}</span></p>
+                <p><strong>ผู้ตรวจสอบ:</strong> ${lastInsp}</p>
+                
+                <div style="margin-top:20px; padding:15px; background:var(--bg); border-radius:12px; border:1px solid var(--border); text-align:center;">
+                  <h4 style="margin:0 0 10px; color:var(--text-muted); font-size:0.95rem;">สแกนตรวจสอบโดยตรง (QR Code)</h4>
+                  <div style="background:white; display:inline-block; padding:12px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05); margin-bottom:15px;">
+                     <canvas id="qrCanvas"></canvas>
+                  </div>
+                  <button class="btn btn-outline" style="width:100%; border-radius:8px;" onclick="downloadQRCode('${id}')"><i class="fa-solid fa-download"></i> บันทึกรูปภาพ QR Code</button>
+                </div>
+              </div>
+            `,
+            showConfirmButton: true, confirmButtonText: 'ปิดหน้าต่าง',
+            customClass: { popup: 'swal2-popup admin-modal-popup' },
+            didOpen: () => {
+                const targetUrl = "https://chaiwatsuthacheewa-creator.github.io/NTL-SAFETY/?id=" + id;
+                new QRious({ element: document.getElementById('qrCanvas'), value: targetUrl, size: 200, level: 'H' });
+            }
+        });
+    }
+
+    function downloadQRCode(assetId) {
+        const canvas = document.getElementById('qrCanvas'); if(!canvas) return;
+        const url = canvas.toDataURL("image/png");
+        const link = document.createElement('a'); link.download = `QR_${assetId}.png`; link.href = url; link.click();
+    }
+
+    // --- 👁️ View & General Module Logic ---
     function switchViewTab(tab) {
       const btnCur = document.getElementById('btnTabCurrent'); if(btnCur) btnCur.classList.remove('active');
       const btnYr = document.getElementById('btnTabYearly'); if(btnYr) btnYr.classList.remove('active');
-      
       const tabCur = document.getElementById('tabCurrent'); if(tabCur) tabCur.style.display = 'none';
       const tabYr = document.getElementById('tabYearly'); if(tabYr) tabYr.style.display = 'none';
       
-      if (tab === 'current') { 
-        if(btnCur) btnCur.classList.add('active'); 
-        if(tabCur) tabCur.style.display = 'block'; 
-      } else { 
-        if(btnYr) btnYr.classList.add('active'); 
-        if(tabYr) tabYr.style.display = 'block'; 
-      }
+      if (tab === 'current') { if(btnCur) btnCur.classList.add('active'); if(tabCur) tabCur.style.display = 'block'; } 
+      else { if(btnYr) btnYr.classList.add('active'); if(tabYr) tabYr.style.display = 'block'; }
     }
 
     function loadAssetData(assetId, mode='inspector') {
@@ -552,28 +669,27 @@
       apiRequest('getAssetData', { assetId: assetId }).then(data => {
         Swal.close(); 
         
+        const isEL = assetId.includes("EL-");
+        
         if (mode === 'view') {
-          setTxt('vType', assetId.includes("EL-") ? "Emergency Light" : "Fire Extinguisher");
-          setTxt('vAssetIdView', assetId); 
-          setTxt('vBuildingView', data.building); 
-          setTxt('vFloorView', data.floor);
-          setTxt('vMonth', data.currentMonth); 
-          setTxt('vYear', data.currentYear);
-          setTxt('vDate', data.lastDate); 
-          setTxt('vInspector', data.lastInspector);
+          const vIcon = document.getElementById('vIcon');
+          if(vIcon) vIcon.innerHTML = isEL ? '<i class="fa-solid fa-lightbulb"></i>' : '<i class="fa-solid fa-fire-extinguisher"></i>';
 
-          if (data.lastStatus === "FAIL") setHtml('vStatus', "<div class='status-badge badge-fail' style='font-size:1.1rem;'><i class='fa-solid fa-triangle-exclamation'></i> ชำรุด</div>");
-          else if (data.lastStatus === "PASS") setHtml('vStatus', "<div class='status-badge badge-pass' style='font-size:1.1rem;'><i class='fa-solid fa-circle-check'></i> ปกติ</div>");
-          else setHtml('vStatus', "<div class='status-badge badge-pending' style='font-size:1.1rem;'><i class='fa-regular fa-clock'></i> รอตรวจ</div>");
+          setTxt('vType', isEL ? "Emergency Light" : "Fire Extinguisher");
+          setTxt('vAssetIdView', assetId); setTxt('vBuildingView', data.building); setTxt('vFloorView', data.floor);
+          setTxt('vMonth', data.currentMonth); setTxt('vYear', data.currentYear);
+          setTxt('vDate', data.lastDate); setTxt('vInspector', data.lastInspector);
+
+          if (data.lastStatus === "FAIL") setHtml('vStatus', "<div class='status-badge badge-fail' style='font-size:1.1rem;'><i class='fa-solid fa-triangle-exclamation'></i> ชำรุด (FAIL)</div>");
+          else if (data.lastStatus === "PASS") setHtml('vStatus', "<div class='status-badge badge-pass' style='font-size:1.1rem;'><i class='fa-solid fa-circle-check'></i> ปกติ (PASS)</div>");
+          else setHtml('vStatus', "<div class='status-badge badge-pending' style='font-size:1.1rem;'><i class='fa-regular fa-clock'></i> รอตรวจเดือนนี้</div>");
 
           if (data.lastStatus !== "PENDING" && data.checks.length > 0) {
             let chkHtml = ""; 
             for(let i=0; i<5; i++) { let icon = data.checks[i] === "Pass" ? "<span style='color:var(--success);'>✔</span>" : "<span style='color:var(--danger);'>✘</span>"; chkHtml += `<li>${icon} ${data.dynamicChecklist[i]}</li>`; }
             setHtml('vChecklistList', chkHtml);
             const clArea = document.getElementById('vChecklistArea'); if(clArea) clArea.style.display = "block";
-          } else { 
-            const clArea = document.getElementById('vChecklistArea'); if(clArea) clArea.style.display = "none"; 
-          }
+          } else { const clArea = document.getElementById('vChecklistArea'); if(clArea) clArea.style.display = "none"; }
 
           let tableHtml = ""; const currentMonthIndex = new Date().getMonth();
           data.yearlyLogs.forEach((log, index) => {
@@ -628,16 +744,8 @@
       const tabS = document.getElementById('inspectorScanTab'); if(tabS) tabS.style.display = 'none';
       const tabH = document.getElementById('inspectorHistoryTab'); if(tabH) tabH.style.display = 'none';
       
-      if (tab === 'scan') { 
-        if(btnS) btnS.classList.add('active'); 
-        if(tabS) tabS.style.display = 'block'; 
-        initScanner(); 
-      } 
-      else { 
-        if(btnH) btnH.classList.add('active'); 
-        if(tabH) tabH.style.display = 'block'; 
-        stopScanner(); loadMyHistory(); 
-      }
+      if (tab === 'scan') { if(btnS) btnS.classList.add('active'); if(tabS) tabS.style.display = 'block'; initScanner(); } 
+      else { if(btnH) btnH.classList.add('active'); if(tabH) tabH.style.display = 'block'; stopScanner(); loadMyHistory(); }
     }
 
     function initScanner() {
@@ -665,11 +773,7 @@
             <span class="checklist-text">${idx+1}. ${item}</span>
             <label class="toggle-container">
               <input type="checkbox" id="chk${idx}" checked onchange="updateToggleUI(this, ${idx})">
-              <span class="toggle-track">
-                <span class="toggle-text-fail">FAIL</span>
-                <span class="toggle-text-pass">PASS</span>
-                <span class="toggle-thumb"></span>
-              </span>
+              <span class="toggle-track"><span class="toggle-text-fail">FAIL</span><span class="toggle-text-pass">PASS</span><span class="toggle-thumb"></span></span>
             </label>
             <input type="hidden" id="chkVal${idx}" value="Pass">
           </div>
@@ -679,8 +783,7 @@
     }
 
     function updateToggleUI(checkbox, idx) {
-        const valEl = document.getElementById(`chkVal${idx}`);
-        if(valEl) valEl.value = checkbox.checked ? 'Pass' : 'Fail';
+        const valEl = document.getElementById(`chkVal${idx}`); if(valEl) valEl.value = checkbox.checked ? 'Pass' : 'Fail';
     }
 
     function processImg(e, index) {
@@ -693,15 +796,12 @@
       if(isSubmitting) return; const uCount = photos.filter(p => p).length;
       if(uCount < 2) return Swal.fire({title: 'รูปไม่ครบ', text: 'ถ่ายภาพอย่างน้อย 2 มุม', icon: 'warning', allowOutsideClick: false});
       
-      const subBtn = document.getElementById('submitBtn');
-      isSubmitting = true; if(subBtn) subBtn.disabled = true; 
+      const subBtn = document.getElementById('submitBtn'); isSubmitting = true; if(subBtn) subBtn.disabled = true; 
       Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       
       let finalRes = "PASS"; const chkVal = [];
       for(let i=0; i<5; i++) { 
-        const vEl = document.getElementById(`chkVal${i}`);
-        const val = vEl ? vEl.value : 'Pass';
-        chkVal.push(val); 
+        const vEl = document.getElementById(`chkVal${i}`); const val = vEl ? vEl.value : 'Pass'; chkVal.push(val); 
         if(val === "Fail") finalRes = "FAIL"; 
       }
       
@@ -743,35 +843,23 @@
       }).catch(err => Swal.fire({title: 'ปฏิเสธการเข้าถึง', text: err.message, icon: 'error', allowOutsideClick: false}));
     }
 
-    // --- 👔 Admin Dashboard ---
-    
-    // ฟังก์ชันช่วยดึงค่าเดือนที่เลือกจาก Month Picker
+    // --- 👔 Admin Dashboard & Report Engine ---
     function getSelectedMonth() {
       const picker = document.getElementById('dashMonthPicker');
-      if (picker && picker.value) {
-        const parts = picker.value.split('-'); // format "YYYY-MM"
-        return `${parts[1]}/${parts[0]}`; // return "MM/YYYY"
-      }
-      return ""; // ปล่อยว่างให้ Backend จัดการเป็นเดือนปัจจุบัน
+      if (picker && picker.value) { const parts = picker.value.split('-'); return `${parts[1]}/${parts[0]}`; }
+      return ""; 
     }
-
-    // เมื่อเปลี่ยนเดือน ให้ดึงข้อมูลใหม่
-    function changeDashMonth() {
-      loadDashboardData();
-    }
+    function changeDashMonth() { loadDashboardData(); }
 
     function loadDashboardData() {
       setHtml('allAssetsBody', '<tr><td colspan="4" class="center-col"><i class="fa-solid fa-spinner fa-spin"></i> ดึงข้อมูล...</td></tr>');
-      
       const targetMonth = getSelectedMonth();
       
       apiRequest('getFullDashboardData', { monthYear: targetMonth }).then(data => {
         dashboardDataCache = data.allAssets; dashBuildingsCache = data.buildings;
-        
         let filterHtml = `<button class="filter-tab active" onclick="setDashBuilding('ALL', this)">ทุกอาคาร</button>`;
         dashBuildingsCache.forEach(b => { filterHtml += `<button class="filter-tab" onclick="setDashBuilding('${b}', this)">${b}</button>`; });
         setHtml('dashBuildingFilters', filterHtml);
-        
         updateDashboardView();
       }).catch(err => Swal.fire({title: 'ข้อผิดพลาด', text: err.message, icon: 'error', allowOutsideClick: false}));
     }
@@ -782,15 +870,12 @@
         if(el) el.classList.add('active');
         updateDashboardView();
     }
-    
     function setDashBuilding(building, el) {
         currentDashBuilding = building;
         document.querySelectorAll('#dashBuildingFilters .filter-tab').forEach(b => b.classList.remove('active'));
         if(el) el.classList.add('active');
         updateDashboardView();
     }
-
-    // ฟังก์ชันจัดการ Checkbox เลือกทั้งหมด
     function toggleAllCheckboxes(source) {
       const checkboxes = document.querySelectorAll('.row-chk');
       checkboxes.forEach(chk => { chk.checked = source.checked; });
@@ -799,16 +884,12 @@
     function updateDashboardView() {
         let filtered = dashboardDataCache;
         if(currentDashBuilding !== 'ALL') filtered = filtered.filter(a => a.building === currentDashBuilding);
-        
         let t=0, p=0, f=0, pd=0;
         filtered.forEach(a => { t++; if(a.status==='PASS') p++; else if(a.status==='FAIL') f++; else pd++; });
         setTxt('dashTotal', t); setTxt('dashPass', p); setTxt('dashFail', f); setTxt('dashPending', pd);
 
         if(currentDashStatus !== 'ALL') filtered = filtered.filter(a => a.status === currentDashStatus);
-
-        // รีเซ็ตปุ่มเลือกทั้งหมด
-        const checkAll = document.getElementById('checkAll');
-        if(checkAll) checkAll.checked = false;
+        const checkAll = document.getElementById('checkAll'); if(checkAll) checkAll.checked = false;
 
         let html = "";
         filtered.forEach(item => {
@@ -817,7 +898,7 @@
           if(item.status === "FAIL") badge = "<div class='status-badge badge-fail'>🔴 ชำรุด</div>";
           
           html += `<tr class="master-row" onclick="loadAdminModal('${item.id}')">
-                     <td class="center-col" onclick="event.stopPropagation();"><input type="checkbox" class="custom-chk row-chk" value="${item.id}"></td>
+                     <td class="center-col" style="padding-left:10px;" onclick="event.stopPropagation();"><input type="checkbox" class="custom-chk row-chk" value="${item.id}"></td>
                      <td style="color:var(--primary); font-weight:600;">${item.id}</td>
                      <td>${item.building} <br><span style="font-size:0.75rem; color:var(--text-muted);">ชั้น ${item.floor}</span></td>
                      <td class="center-col">${badge}</td>
@@ -830,11 +911,7 @@
         Swal.fire({
             title: `<div class="admin-modal-title"><i class="fa-regular fa-folder-open"></i> ประวัติ: <span style="color:var(--primary);">${assetId}</span></div>`,
             html: '<div style="margin:30px 0;"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i><br><br>กำลังดึงข้อมูลรายปี...</div>',
-            showConfirmButton: false,
-            showCloseButton: true,
-            allowOutsideClick: false, 
-            customClass: { popup: 'swal2-popup admin-modal-popup' },
-            width: '600px'
+            showConfirmButton: false, showCloseButton: true, allowOutsideClick: false, customClass: { popup: 'swal2-popup admin-modal-popup' }, width: '600px'
         });
 
         apiRequest('getAssetData', { assetId: assetId }).then(data => {
@@ -843,96 +920,52 @@
                 <table class="data-table" style="margin:0; border:none; width:100%;">
                   <thead><tr><th>ด/ป</th><th>วันที่</th><th class="center-col">สถานะ</th><th>ผู้ตรวจ</th></tr></thead>
                   <tbody>`;
-            
             const currentMonthIndex = new Date().getMonth();
             data.yearlyLogs.forEach((log, index) => {
               let badge = "<div class='status-badge badge-pending' style='padding:2px 8px; font-size:0.7rem;'>⚪ รอตรวจ</div>"; 
               if(log.status === "PASS") badge = "<div class='status-badge badge-pass' style='padding:2px 8px; font-size:0.7rem;'>🟢 ปกติ</div>"; 
               else if(log.status === "FAIL") badge = "<div class='status-badge badge-fail' style='padding:2px 8px; font-size:0.7rem;'>🔴 ชำรุด</div>";
-              
               let rowStyle = (index === currentMonthIndex) ? 'background: rgba(0, 51, 160, 0.05); font-weight:600;' : '';
               tableHtml += `<tr style="${rowStyle}"><td style="font-size:0.85rem;">${log.monthName}</td><td style="font-size:0.85rem;">${log.date}</td><td class="center-col">${badge}</td><td style="font-size:0.75rem;">${log.inspector}</td></tr>`;
             });
-            tableHtml += `</tbody></table></div>`;
-            
-            tableHtml += `
+            tableHtml += `</tbody></table></div>
               <div style="display:flex; gap:10px; margin-top:20px;">
                 <button class="btn btn-outline" style="flex:1; border-radius:10px;" onclick="generateSinglePDF('${assetId}')"><i class="fa-solid fa-file-pdf"></i> สร้างรายงาน (PDF)</button>
                 <button class="btn btn-primary" style="flex:1; border-radius:10px;" onclick="Swal.close()">ปิดหน้าต่าง</button>
               </div>`;
-
             Swal.update({ html: tableHtml });
-        }).catch(err => {
-            Swal.update({ html: `<div style="color:var(--danger); margin:20px 0;"><i class="fa-solid fa-triangle-exclamation"></i> ${err.message}</div>` });
-        });
+        }).catch(err => { Swal.update({ html: `<div style="color:var(--danger); margin:20px 0;"><i class="fa-solid fa-triangle-exclamation"></i> ${err.message}</div>` }); });
     }
 
-    // 🚀 ระบบ Export PDF เดี่ยว (จากใน Modal)
     function generateSinglePDF(assetId) {
       const targetMonth = getSelectedMonth();
-      
-      Swal.fire({ 
-        title: 'กำลังสร้างเอกสาร PDF...', 
-        html: `ระบบกำลังดึงรูปภาพและสร้างรายงานสำหรับ <b>${assetId}</b><br>โปรดรอสักครู่ (ประมาณ 5-10 วินาที)<br><br><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i>`,
-        showConfirmButton: false, 
-        allowOutsideClick: false 
-      });
-      
+      Swal.fire({ title: 'กำลังสร้างเอกสาร PDF...', html: `ระบบกำลังดึงรูปภาพและสร้างรายงานสำหรับ <b>${assetId}</b><br>โปรดรอสักครู่ (ประมาณ 5-10 วินาที)<br><br><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i>`, showConfirmButton: false, allowOutsideClick: false });
       apiRequest('generatePDF', { assetId: assetId, monthYear: targetMonth }).then(pdfUrl => {
-        Swal.fire({
-          icon: 'success', title: 'สร้าง PDF สำเร็จ!',
-          html: `<a href="${pdfUrl}" target="_blank" class="btn btn-primary" style="text-decoration:none; display:inline-block; margin-top:15px; border-radius:10px; padding:15px;"><i class="fa-solid fa-download"></i> คลิกเปิด / ดาวน์โหลด</a>`,
-          showConfirmButton: true, confirmButtonText: 'เสร็จสิ้น', allowOutsideClick: false
-        });
-      }).catch(err => {
-        Swal.fire({icon: 'error', title: 'ผิดพลาด', text: err.message, allowOutsideClick: false});
-      });
+        Swal.fire({ icon: 'success', title: 'สร้าง PDF สำเร็จ!', html: `<a href="${pdfUrl}" target="_blank" class="btn btn-primary" style="text-decoration:none; display:inline-block; margin-top:15px; border-radius:10px; padding:15px;"><i class="fa-solid fa-download"></i> คลิกเปิด / ดาวน์โหลด</a>`, showConfirmButton: true, confirmButtonText: 'เสร็จสิ้น', allowOutsideClick: false });
+      }).catch(err => { Swal.fire({icon: 'error', title: 'ผิดพลาด', text: err.message, allowOutsideClick: false}); });
     }
 
-    // 🚀 ระบบ Bulk Export PDF (ส่งเดือนที่เลือกไปด้วย)
     async function exportBulkPDF() {
       const chks = document.querySelectorAll('.row-chk:checked');
       if(chks.length === 0) return Swal.fire('ไม่ได้เลือกข้อมูล', 'กรุณาติ๊กช่องสี่เหลี่ยมด้านหน้าถัง ที่ต้องการ Export อย่างน้อย 1 รายการ', 'warning');
-      
       const ids = Array.from(chks).map(c => c.value);
       const targetMonth = getSelectedMonth();
       
-      Swal.fire({
-        title: 'กำลังสร้าง PDF (Bulk Mode)...',
-        html: `ระบบกำลังทยอยสร้างเอกสาร <b id="pdf-progress" style="color:var(--primary); font-size:1.2rem;">0 / ${ids.length}</b> รายการ<br><span style="font-size:0.8rem; color:var(--text-muted);">(กรุณาอย่าเพิ่งปิดหน้าต่างนี้)</span><br><br><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i>`,
-        allowOutsideClick: false,
-        showConfirmButton: false
-      });
+      Swal.fire({ title: 'กำลังสร้าง PDF (Bulk Mode)...', html: `ระบบกำลังทยอยสร้างเอกสาร <b id="pdf-progress" style="color:var(--primary); font-size:1.2rem;">0 / ${ids.length}</b> รายการ<br><span style="font-size:0.8rem; color:var(--text-muted);">(กรุณาอย่าเพิ่งปิดหน้าต่างนี้)</span><br><br><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i>`, allowOutsideClick: false, showConfirmButton: false });
       
       let successCount = 0; let failCount = 0;
-      
       for(let i = 0; i < ids.length; i++) {
-        try {
-          await apiRequest('generatePDF', { assetId: ids[i], monthYear: targetMonth });
-          successCount++;
-        } catch(e) {
-          failCount++;
-          console.error("Error generating " + ids[i], e);
-        }
-        const progEl = document.getElementById('pdf-progress');
-        if(progEl) progEl.innerText = `${i+1} / ${ids.length}`;
+        try { await apiRequest('generatePDF', { assetId: ids[i], monthYear: targetMonth }); successCount++; } 
+        catch(e) { failCount++; console.error("Error generating " + ids[i], e); }
+        const progEl = document.getElementById('pdf-progress'); if(progEl) progEl.innerText = `${i+1} / ${ids.length}`;
       }
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'สร้าง PDF ทั้งหมดเสร็จสิ้น!',
-        html: `สำเร็จ: <b>${successCount}</b> รายการ<br>ล้มเหลว: <b style="color:var(--danger);">${failCount}</b> รายการ<br><br><span style="font-size:0.85rem; color:var(--text-muted);">คุณสามารถเข้าไปดูไฟล์ทั้งหมดได้ที่ Google Drive<br>ในโฟลเดอร์ <b>NTL_Safety_PDF_Reports</b></span>`,
-        confirmButtonText: 'ตกลงรับทราบ',
-        allowOutsideClick: false
-      });
+      Swal.fire({ icon: 'success', title: 'สร้าง PDF ทั้งหมดเสร็จสิ้น!', html: `สำเร็จ: <b>${successCount}</b> รายการ<br>ล้มเหลว: <b style="color:var(--danger);">${failCount}</b> รายการ<br><br><span style="font-size:0.85rem; color:var(--text-muted);">คุณสามารถเข้าไปดูไฟล์ทั้งหมดได้ที่ Google Drive<br>ในโฟลเดอร์ <b>NTL_Safety_PDF_Reports</b></span>`, confirmButtonText: 'ตกลงรับทราบ', allowOutsideClick: false });
     }
 
     function exportExcel() {
       if(dashboardDataCache.length === 0) return Swal.fire({title: 'ไม่มีข้อมูล', text: '', icon: 'warning', allowOutsideClick: false});
-      
       const picker = document.getElementById('dashMonthPicker');
       let monthStr = picker && picker.value ? picker.value : new Date().toISOString().split('T')[0];
-      
       const wsData = [["รหัสอุปกรณ์", "อาคาร", "ชั้น", `สถานะการตรวจเดือน ${monthStr}`]];
       dashboardDataCache.forEach(i => wsData.push([i.id, i.building, i.floor, i.status]));
       const ws = XLSX.utils.aoa_to_sheet(wsData); const wb = XLSX.utils.book_new();
