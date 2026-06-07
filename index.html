@@ -129,7 +129,7 @@
     .filter-tab:hover { color: var(--primary); }
     .filter-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 
-    /* 📦 Asset Grid & Smart Component Layout */
+    /* 📦 Asset Grid */
     .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 16px; margin-top: 15px; }
     .asset-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 15px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.01); }
     .asset-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: var(--primary); }
@@ -372,7 +372,7 @@
     <div id="inventorySection" style="display: none; max-width:1000px; margin:0 auto;">
       <div class="card" style="padding:15px; margin-bottom:15px;">
         <div class="filter-tabs" id="invBuildingFilters" style="border:none; margin:0; padding-bottom:10px;"></div>
-        <input type="text" class="form-control" id="invSearchInput" placeholder="🔍 ค้นหารหัสอุปกรณ์ หรือ โซน..." onkeyup="filterInventory()" style="margin:0; margin-top:10px;">
+        <input type="text" class="form-control" id="invSearchInput" placeholder="🔍 ค้นหารหัสอุปกรณ์..." onkeyup="filterInventory()" style="margin:0; margin-top:10px;">
       </div>
       
       <div class="asset-grid" id="inventoryGrid">
@@ -381,8 +381,7 @@
     </div>
 
     <div id="statusSection" style="display: none; max-width:1000px; margin:0 auto;">
-      <div class="status-summary" id="statusSummary">
-         </div>
+      <div class="status-summary" id="statusSummary"></div>
       <div class="card" style="padding:15px; margin-bottom:15px;">
         <div class="filter-tabs" id="statusBuildingFilters" style="border:none; margin:0; padding-bottom:0;"></div>
       </div>
@@ -415,11 +414,8 @@
     let currentDashStatus = 'ALL'; let currentDashBuilding = 'ALL';
 
     let inventoryDataCache = []; let currentInvBuilding = 'ALL';
-    
-    // 🚨 Status Cache
     let statusDataCache = []; let currentStatusBuilding = 'ALL';
 
-    // 🔒 Safe Dynamic UI Setter Function
     const setTxt = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; }
     const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; }
 
@@ -533,7 +529,7 @@
         if (!currentUser) { Swal.fire({title: 'สงวนสิทธิ์', text: 'กรุณาล็อกอินเจ้าหน้าที่ก่อน', icon: 'warning', allowOutsideClick: false}).then(() => navTo('login'));
         } else { showScreen('inventorySection', ''); loadInventoryData(); }
       }
-      else if (target === 'status') { // 🚨 เปิดหน้าสถานะถัง
+      else if (target === 'status') {
         const sideNav = document.getElementById('sideNavStatus'); if(sideNav) sideNav.classList.add('active');
         const botNav = document.getElementById('botNavStatus'); if(botNav) botNav.classList.add('active');
         stopScanner();
@@ -569,9 +565,13 @@
     function updateAuthUI() {
       const authTxt = currentUser ? "ออกจากระบบ" : "ล็อกอินช่าง";
       setTxt('txtSideAuth', authTxt);
+      setTxt('txtBotAuth', authTxt);
       
       const iconSide = document.getElementById('iconSideAuth');
       if (iconSide) { iconSide.className = currentUser ? 'fa-solid fa-power-off' : 'fa-solid fa-circle-user'; iconSide.style.color = currentUser ? 'var(--danger)' : 'inherit'; }
+      
+      const iconBot = document.getElementById('iconBotAuth');
+      if (iconBot) { iconBot.className = currentUser ? 'fa-solid fa-power-off' : 'fa-solid fa-circle-user'; iconBot.style.color = currentUser ? 'var(--danger)' : 'inherit'; }
 
       const titleEl = document.getElementById('topPageTitle');
       if(titleEl && currentUser && currentUser.role === 'Inspector') {
@@ -584,17 +584,14 @@
       const result = await response.json(); if(result.status === 'error') throw new Error(result.message); return result.data;
     }
 
-    // --- 🚨 7. Status Feature Functions ---
+    // --- 🚨 Status Feature ---
     function loadStatusData() {
       setHtml('statusGrid', '<div style="grid-column: 1 / -1; text-align:center; padding:30px; color:var(--text-muted);"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br>กำลังดึงข้อมูลสถานะ...</div>');
-      // ดึงของเดือนปัจจุบัน
       apiRequest('getFullDashboardData', { monthYear: "" }).then(data => {
         statusDataCache = data.allAssets; 
-        
         let filterHtml = `<button class="filter-tab active" onclick="setStatusBuilding('ALL', this)">ทุกอาคาร</button>`;
         data.buildings.forEach(b => { filterHtml += `<button class="filter-tab" onclick="setStatusBuilding('${b}', this)">${b}</button>`; });
         setHtml('statusBuildingFilters', filterHtml);
-        
         updateStatusView();
       }).catch(err => Swal.fire('ข้อผิดพลาด', err.message, 'error'));
     }
@@ -608,16 +605,14 @@
 
     function updateStatusView() {
         let filtered = statusDataCache;
-        if(currentStatusBuilding !== 'ALL') {
-            filtered = filtered.filter(a => a.building === currentStatusBuilding);
-        }
+        if(currentStatusBuilding !== 'ALL') filtered = filtered.filter(a => a.building === currentStatusBuilding);
         
         let done = 0, pending = 0;
         filtered.forEach(a => { if(a.status === 'PASS' || a.status === 'FAIL') done++; else pending++; });
         
         setHtml('statusSummary', `
-            <div class="summary-box done"><div style="font-size:1.8rem; line-height:1;">${done}</div><div style="font-size:0.8rem;">ตรวจแล้ว</div></div>
-            <div class="summary-box wait"><div style="font-size:1.8rem; line-height:1;">${pending}</div><div style="font-size:0.8rem;">รอตรวจสอบ</div></div>
+            <div class="summary-box done"><div style="font-size:1.8rem; line-height:1; font-weight:700;">${done}</div><div style="font-size:0.8rem; font-weight:600;">ตรวจแล้ว</div></div>
+            <div class="summary-box wait"><div style="font-size:1.8rem; line-height:1; font-weight:700;">${pending}</div><div style="font-size:0.8rem; font-weight:600;">รอตรวจสอบ</div></div>
         `);
 
         let html = "";
@@ -650,8 +645,7 @@
                   <div style="text-align:left; font-size:1.05rem; color:var(--text);">
                     <p><strong>รหัสอุปกรณ์:</strong> <span style="color:var(--primary); font-weight:700;">${assetId}</span></p>
                     <p><strong>อาคาร:</strong> ${data.building}</p>
-                    <p><strong>ชั้น:</strong> ${data.floor}</p>
-                    <p><strong>โซน:</strong> ${data.zone}</p>
+                    <p><strong>ชั้น (และโซน):</strong> ${data.floor}</p>
                     <hr style="border:0; border-top:1px dashed var(--border); margin:15px 0;">
                     <p><strong>สถานะเดือนนี้:</strong> ${statusBadge}</p>
                     <p><strong>ตรวจสอบล่าสุด:</strong> <span style="color:var(--primary); font-weight:600;">${data.lastDate}</span></p>
@@ -664,7 +658,7 @@
         }).catch(err => Swal.fire('Error', err.message, 'error'));
     }
 
-    // --- 📦 6. Inventory Controls ---
+    // --- 📦 Inventory Controls ---
     function loadInventoryData() {
       setHtml('inventoryGrid', '<div style="grid-column: 1 / -1; text-align:center; padding:30px; color:var(--text-muted);"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br>กำลังดึงข้อมูลคลังอุปกรณ์...</div>');
       apiRequest('getInventoryData', {}).then(data => {
@@ -689,32 +683,31 @@
         const searchTxt = document.getElementById('invSearchInput').value.toLowerCase();
         let filtered = inventoryDataCache;
         if (currentInvBuilding !== 'ALL') filtered = filtered.filter(a => a.building === currentInvBuilding);
-        if (searchTxt.trim() !== '') filtered = filtered.filter(a => a.id.toLowerCase().includes(searchTxt) || a.zone.toLowerCase().includes(searchTxt));
+        if (searchTxt.trim() !== '') filtered = filtered.filter(a => a.id.toLowerCase().includes(searchTxt));
 
         let html = "";
         filtered.forEach(item => {
             const isEL = item.id.includes("EL-");
             const icon = isEL ? '<i class="fa-solid fa-lightbulb"></i>' : '<i class="fa-solid fa-fire-extinguisher"></i>';
             html += `
-                <div class="asset-card" onclick="openAssetDetailModal('${item.id}', '${item.building}', '${item.floor}', '${item.zone}', '${item.lastDate}', '${item.lastInspector}')">
+                <div class="asset-card" onclick="openAssetDetailModal('${item.id}', '${item.building}', '${item.floor}', '${item.lastDate}', '${item.lastInspector}')">
                     <div class="asset-icon">${icon}</div>
                     <div class="asset-id">${item.id}</div>
-                    <div class="asset-loc">${item.building}<br>ชั้น ${item.floor} (โซน ${item.zone})</div>
+                    <div class="asset-loc">${item.building}<br>ชั้น ${item.floor}</div>
                 </div>
             `;
         });
         setHtml('inventoryGrid', html || '<div style="grid-column: 1 / -1; text-align:center; padding:30px; color:var(--text-muted);">ไม่พบอุปกรณ์ที่ค้นหา</div>');
     }
 
-    function openAssetDetailModal(id, bldg, flr, zone, lastDate, lastInsp) {
+    function openAssetDetailModal(id, bldg, flr, lastDate, lastInsp) {
         Swal.fire({
             title: `<div class="admin-modal-title" style="margin-bottom:5px;"><i class="fa-solid fa-info-circle"></i> ข้อมูลอุปกรณ์</div>`,
             html: `
               <div style="text-align:left; font-size:1.05rem; color:var(--text);">
                 <p><strong>รหัส:</strong> <span style="color:var(--primary); font-weight:700;">${id}</span></p>
                 <p><strong>อาคาร:</strong> ${bldg}</p>
-                <p><strong>ชั้น:</strong> ${flr}</p>
-                <p><strong>โซน:</strong> ${zone}</p>
+                <p><strong>ชั้น (และโซน):</strong> ${flr}</p>
                 <p><strong>ตรวจสอบล่าสุด:</strong> <span style="color:var(--primary); font-weight:600;">${lastDate}</span></p>
                 <p><strong>ผู้ตรวจสอบ:</strong> ${lastInsp}</p>
                 
@@ -742,7 +735,7 @@
         const link = document.createElement('a'); link.download = `QR_${assetId}.png`; link.href = url; link.click();
     }
 
-    // --- 👁️ View & Scanner ---
+    // --- 👁️ View & General ---
     function switchViewTab(tab) {
       const btnCur = document.getElementById('btnTabCurrent'); if(btnCur) btnCur.classList.remove('active');
       const btnYr = document.getElementById('btnTabYearly'); if(btnYr) btnYr.classList.remove('active');
